@@ -1,7 +1,19 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { RequireAuth } from "@/components/RequireAuth";
+import Login from "@/pages/Login";
+import Dashboard from "@/pages/Dashboard";
+import Expenses from "@/pages/Expenses";
+
 export default function App() {
   return (
-    <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
-      Expense Flow — scaffold ready.
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route element={<RequireAuth />}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/expenses" element={<Expenses />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
