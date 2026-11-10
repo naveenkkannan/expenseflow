@@ -1,0 +1,22 @@
+{
+  "name": "expense-flow",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,green \"npm run dev -w server\" \"npm run dev -w client\"",
+    "build": "npm run build -w server && npm run build -w client",
+    "test": "npm run test -w server",
+    "db:migrate": "node db/migrate.js",
+    "db:seed": "node db/seed.js",
+    "seed:user": "node db/seed-user.js",
+    "reset-password": "node db/reset-password.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "dotenv": "^16.4.5",
+    "pg": "^8.13.1"
+  }
+}
