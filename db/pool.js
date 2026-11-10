@@ -16,7 +16,9 @@ if (!connectionString) {
   );
 }
 
+const useSsl = connectionString.includes("sslmode=require");
+
 export const pool = new pg.Pool({
   connectionString,
-  ssl: { rejectUnauthorized: false },
+  ssl: useSsl ? { rejectUnauthorized: false } : false,
 });
