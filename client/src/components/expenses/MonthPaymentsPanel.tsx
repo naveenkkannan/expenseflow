@@ -106,14 +106,14 @@ export function MonthPaymentsPanel({
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     <span className="text-sm font-medium tabular-nums">{formatINR(p.amount)}</span>
-                    <Button variant="ghost" size="icon" aria-label="Edit payment" className="h-9 w-9" onClick={() => setEditingPayment(p)}>
+                    <Button variant="ghost" size="icon" aria-label="Edit payment" className="h-11 w-11" onClick={() => setEditingPayment(p)}>
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
                       aria-label="Delete payment"
-                      className="h-9 w-9 text-destructive hover:text-destructive"
+                      className="h-11 w-11 text-destructive hover:text-destructive"
                       onClick={() => handleDelete(p.id)}
                     >
                       <Trash2 className="h-4 w-4" />

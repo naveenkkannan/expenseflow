@@ -97,7 +97,7 @@ export function ExpenseTable({
                         variant="ghost"
                         size="icon"
                         aria-label={`Edit ${e.name}`}
-                        className="h-9 w-9"
+                        className="h-11 w-11"
                         onClick={() => onEdit(e)}
                       >
                         <Pencil className="h-4 w-4" />
@@ -106,7 +106,7 @@ export function ExpenseTable({
                         variant="ghost"
                         size="icon"
                         aria-label={`Delete ${e.name}`}
-                        className="h-9 w-9 text-destructive hover:text-destructive"
+                        className="h-11 w-11 text-destructive hover:text-destructive"
                         onClick={() => handleDelete(e)}
                       >
                         <Trash2 className="h-4 w-4" />

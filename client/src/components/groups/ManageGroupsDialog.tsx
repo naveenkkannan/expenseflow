@@ -75,10 +75,10 @@ export function ManageGroupsDialog({ open, onOpenChange }: { open: boolean; onOp
                     className="h-9"
                     autoFocus
                   />
-                  <Button variant="ghost" size="icon" aria-label="Save group name" className="h-9 w-9" onClick={() => handleRename(g.id)}>
+                  <Button variant="ghost" size="icon" aria-label="Save group name" className="h-11 w-11" onClick={() => handleRename(g.id)}>
                     <Check className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" aria-label="Cancel rename" className="h-9 w-9" onClick={() => setEditingId(null)}>
+                  <Button variant="ghost" size="icon" aria-label="Cancel rename" className="h-11 w-11" onClick={() => setEditingId(null)}>
                     <X className="h-4 w-4" />
                   </Button>
                 </>
@@ -89,7 +89,7 @@ export function ManageGroupsDialog({ open, onOpenChange }: { open: boolean; onOp
                     variant="ghost"
                     size="icon"
                     aria-label={`Rename ${g.name}`}
-                    className="h-9 w-9"
+                    className="h-11 w-11"
                     onClick={() => {
                       setEditingId(g.id);
                       setEditingName(g.name);
@@ -101,7 +101,7 @@ export function ManageGroupsDialog({ open, onOpenChange }: { open: boolean; onOp
                     variant="ghost"
                     size="icon"
                     aria-label={`Delete ${g.name}`}
-                    className="h-9 w-9 text-destructive hover:text-destructive"
+                    className="h-11 w-11 text-destructive hover:text-destructive"
                     onClick={() => handleDelete(g.id)}
                   >
                     <Trash2 className="h-4 w-4" />

@@ -13,7 +13,7 @@ export function YearSwitcher() {
         size="icon"
         aria-label="Previous year"
         onClick={() => setYear(year - 1)}
-        className="h-9 w-9"
+        className="h-11 w-11"
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
@@ -24,7 +24,7 @@ export function YearSwitcher() {
         size="icon"
         aria-label="Next year"
         onClick={() => setYear(year + 1)}
-        className="h-9 w-9"
+        className="h-11 w-11"
       >
         <ChevronRight className="h-4 w-4" />
       </Button>
