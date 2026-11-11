@@ -79,6 +79,10 @@ export interface GridExpense {
   activeFrom: string;
   activeTo: string | null;
   paidSoFar: number;
+  ended: boolean;
+  monthsLeft: number | null;
+  plannedYear: number;
+  paidYear: number;
   months: GridMonth[];
 }
 
