@@ -44,9 +44,12 @@ describe("get_daily_month", () => {
     );
     const data = result.rows[0].data;
 
+    const todayIst = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+    const daysElapsedInNovember = todayIst.getUTCDate();
+
     expect(Number(data.total)).toBe(350);
     expect(data.daysLogged).toBe(2);
-    expect(Number(data.avgPerDay)).toBeCloseTo(350 / 11, 1);
+    expect(Number(data.avgPerDay)).toBeCloseTo(350 / daysElapsedInNovember, 1);
 
     const byTag: Record<string, number> = {};
     for (const t of data.byTag) byTag[t.name] = Number(t.amount);
