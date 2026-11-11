@@ -40,7 +40,7 @@ export default function Expenses() {
       )}
 
       <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0">
+        <CardHeader className="flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
           <div>
             <CardTitle>Monthly expenses</CardTitle>
             <p className="text-xs text-muted-foreground">Change an amount and choose the month it applies from. Earlier months keep their old amount.</p>

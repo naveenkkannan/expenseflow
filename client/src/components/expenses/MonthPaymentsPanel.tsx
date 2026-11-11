@@ -76,7 +76,7 @@ export function MonthPaymentsPanel({
   return (
     <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
       <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0">
+        <CardHeader className="flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
           <div>
             <CardTitle className="text-foreground text-base font-semibold">
               {cell.expenseName} — {MONTH_LABELS[month - 1]}

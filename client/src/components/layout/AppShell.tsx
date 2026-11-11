@@ -29,7 +29,7 @@ export function AppShell({ title, subtitle, actions, children }: {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-border bg-white px-4 py-4 md:px-8">
+        <header className="sticky top-0 z-30 flex flex-col gap-3 border-b border-border bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
           <div className="flex items-center gap-3">
             <Button
               type="button"
@@ -46,7 +46,7 @@ export function AppShell({ title, subtitle, actions, children }: {
               {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <YearSwitcher />
             {actions}
           </div>

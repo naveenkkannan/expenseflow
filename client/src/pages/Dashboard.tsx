@@ -131,7 +131,7 @@ export default function Dashboard() {
       </div>
 
       <Card className="mt-6">
-        <CardHeader className="flex-row items-center justify-between space-y-0">
+        <CardHeader className="flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
           <div>
             <CardTitle>Recent payments</CardTitle>
             <p className="text-xs text-muted-foreground">Edit or delete any payment. Several payments in a month add up.</p>
