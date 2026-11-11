@@ -12,3 +12,13 @@ export function formatINR(amount: number): string {
     maximumFractionDigits: 0,
   }).format(amount);
 }
+
+export function formatINRCompact(amount: number): string {
+  if (amount >= 100000) return `${(amount / 100000).toFixed(1)}L`;
+  if (amount >= 1000) return `${(amount / 1000).toFixed(1)}k`;
+  return String(Math.round(amount));
+}
+
+export function todayISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}

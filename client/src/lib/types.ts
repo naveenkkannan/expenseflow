@@ -98,3 +98,71 @@ export interface Payment {
   amount: number;
   note: string | null;
 }
+
+export type PaymentMethod = "upi" | "card" | "cash";
+
+export interface SpendTag {
+  id: string;
+  name: string;
+  color: string;
+  sortOrder: number;
+}
+
+export interface SpendEntry {
+  id: string;
+  amount: number;
+  note: string | null;
+  tagId: string | null;
+  tagName: string;
+  tagColor: string;
+  paymentMethod: PaymentMethod;
+}
+
+export interface DailyDay {
+  date: string;
+  total: number;
+  entries: SpendEntry[];
+}
+
+export interface DailyCalendarDay {
+  date: string;
+  total: number;
+}
+
+export interface DailyTagShare {
+  tagId: string | null;
+  name: string;
+  color: string;
+  amount: number;
+}
+
+export interface DailyMonth {
+  total: number;
+  daysLogged: number;
+  avgPerDay: number;
+  byTag: DailyTagShare[];
+  days: DailyDay[];
+  calendar: DailyCalendarDay[];
+  lastPaymentMethod: PaymentMethod | null;
+}
+
+export interface SpendSuggestion {
+  label: string;
+  amount: number;
+  tagId: string | null;
+  tagName: string | null;
+  tagColor: string | null;
+  paymentMethod: PaymentMethod;
+}
+
+export interface RecentActivity {
+  id: string;
+  kind: "payment" | "spend";
+  date: string;
+  name: string;
+  color: string;
+  amount: number;
+  note: string | null;
+  expenseId: string | null;
+  tagId: string | null;
+}

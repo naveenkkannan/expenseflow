@@ -1,14 +1,16 @@
 import * as React from "react";
 import { Menu } from "lucide-react";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { BottomNav } from "@/components/layout/BottomNav";
 import { YearSwitcher } from "@/components/layout/YearSwitcher";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export function AppShell({ title, subtitle, actions, children }: {
+export function AppShell({ title, subtitle, actions, hideYearSwitcher, children }: {
   title: string;
   subtitle?: string;
   actions?: React.ReactNode;
+  hideYearSwitcher?: boolean;
   children: React.ReactNode;
 }) {
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
@@ -47,13 +49,15 @@ export function AppShell({ title, subtitle, actions, children }: {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <YearSwitcher />
+            {!hideYearSwitcher && <YearSwitcher />}
             {actions}
           </div>
         </header>
 
-        <main className={cn("flex-1 px-4 py-6 md:px-8")}>{children}</main>
+        <main className={cn("flex-1 px-4 py-6 pb-24 md:px-8 md:pb-6")}>{children}</main>
       </div>
+
+      <BottomNav />
     </div>
   );
 }
