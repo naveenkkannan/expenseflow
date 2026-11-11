@@ -35,7 +35,9 @@ export function MonthStatement({
         <Button variant="ghost" size="icon" aria-label="Previous month" className="h-11 w-11" onClick={() => onNavigate(-1)}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <span className="text-sm text-muted-foreground">Navigate months</span>
+        <span className="text-sm font-medium">
+          {MONTH_NAMES[month - 1]} {year}
+        </span>
         <Button
           variant="ghost"
           size="icon"
