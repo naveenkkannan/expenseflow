@@ -11,8 +11,13 @@ export function asyncHandler(
 export class NotFoundError extends Error {}
 
 export function handleRouteError(err: unknown, res: Response) {
-  if (err && typeof err === "object" && "code" in err && (err as { code?: string }).code === "P0002") {
+  const code = err && typeof err === "object" && "code" in err ? (err as { code?: string }).code : undefined;
+  if (code === "P0002") {
     res.status(404).json({ error: { code: "not_found", message: "Resource not found" } });
+    return;
+  }
+  if (code === "23505") {
+    res.status(409).json({ error: { code: "already_exists", message: "That name is already in use" } });
     return;
   }
   console.error(err);

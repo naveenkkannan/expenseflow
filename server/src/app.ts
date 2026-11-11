@@ -8,6 +8,9 @@ import dashboardRouter from "./routes/dashboard.js";
 import expensesRouter from "./routes/expenses.js";
 import groupsRouter from "./routes/groups.js";
 import paymentsRouter from "./routes/payments.js";
+import dailyRouter from "./routes/daily.js";
+import spendsRouter from "./routes/spends.js";
+import spendTagsRouter from "./routes/spend-tags.js";
 
 const app = express();
 
@@ -50,6 +53,9 @@ app.use("/api/dashboard", requireAuth, dashboardRouter);
 app.use("/api/expenses", requireAuth, expensesRouter);
 app.use("/api/groups", requireAuth, groupsRouter);
 app.use("/api/payments", requireAuth, paymentsRouter);
+app.use("/api/daily", requireAuth, dailyRouter);
+app.use("/api/spends", requireAuth, spendsRouter);
+app.use("/api/spend-tags", requireAuth, spendTagsRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error: { code: "not_found", message: "Not found" } });
