@@ -22,10 +22,15 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
+const isProduction = process.env.NODE_ENV === "production";
+
+// The client and API are deployed on different origins (Netlify / Render),
+// so the session cookie must be sent cross-site. That requires
+// SameSite=None, which browsers only honor when Secure is also set.
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax" as const,
+  secure: isProduction,
+  sameSite: (isProduction ? "none" : "lax") as "none" | "lax",
   maxAge: SESSION_COOKIE_MAX_AGE_MS,
 };
 

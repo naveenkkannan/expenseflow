@@ -11,6 +11,11 @@ import paymentsRouter from "./routes/payments.js";
 
 const app = express();
 
+// Render terminates TLS at its proxy, so Express must trust the
+// X-Forwarded-* headers to see requests as secure/https (needed for
+// the Secure session cookie and accurate req.ip in rate limiting).
+app.set("trust proxy", 1);
+
 const allowedOrigins = (process.env.CORS_ORIGIN ?? "http://localhost:5173")
   .split(",")
   .map((origin) => origin.trim());

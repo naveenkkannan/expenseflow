@@ -70,6 +70,52 @@ npm test
 
 Runs the server test suite (Vitest), which covers the SQL functions' status rules and amount-change behaviour, plus auth and route tests.
 
+## Deployment (Netlify + Render)
+
+The frontend and backend are deployed separately, on different origins, so the
+session cookie is sent cross-site (`SameSite=None; Secure`) in production —
+this is handled automatically when `NODE_ENV=production`.
+
+### Backend (Render)
+
+`render.yaml` at the repo root is a Render Blueprint. In the Render dashboard:
+New → Blueprint → point at this repo. It builds with
+`npm install && npm run build -w server` and starts with
+`node server/dist/index.js`. Set these environment variables when prompted
+(same meaning as `server/.env.example`):
+
+- `DATABASE_URL`, `DATABASE_URL_DIRECT` — your Neon connection strings
+- `JWT_SECRET`
+- `SEED_EMAIL`, `SEED_PASSWORD`
+- `CORS_ORIGIN` — your Netlify site's URL(s), comma-separated (e.g.
+  `https://expenseflow.netlify.app`)
+
+Render sets `PORT` and `NODE_ENV=production` automatically for the web
+service plan ordinarily, but `NODE_ENV` is pinned in the blueprint to make
+sure cookie behavior is correct.
+
+Run migrations/seed against the Render-configured database the same way as
+local setup (`npm run db:migrate`, `npm run seed:user`), from your machine
+with `server/.env` pointed at that database.
+
+### Frontend (Netlify)
+
+`netlify.toml` at the repo root configures the build: base directory
+`client`, build command `cd .. && npm install && npm run build -w client`,
+publish directory `client/dist`, plus an SPA redirect so client-side routes
+don't 404 on refresh.
+
+In Netlify's site settings, set:
+
+- `VITE_API_URL` — your Render service's URL (e.g.
+  `https://expense-flow-api.onrender.com`), no trailing slash
+
+### Wiring it together
+
+1. Deploy the backend first, note its Render URL.
+2. Set `VITE_API_URL` on Netlify to that URL and deploy the frontend.
+3. Set `CORS_ORIGIN` on Render to the Netlify URL and redeploy the backend.
+
 ## Notes
 
 - All business logic (status rules, dashboard aggregation, amount changes) lives in Postgres functions under `db/functions`. Express routes are thin wrappers that validate input with zod and call a single function.
