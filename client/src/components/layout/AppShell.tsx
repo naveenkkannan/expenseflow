@@ -16,7 +16,7 @@ export function AppShell({ title, subtitle, actions, hideYearSwitcher, children 
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
 
   return (
-    <div className="flex min-h-screen bg-secondary/40">
+    <div className="flex min-h-screen bg-secondary/40 print:bg-white">
       <Sidebar className="hidden md:flex" />
 
       {mobileNavOpen && (
@@ -31,7 +31,7 @@ export function AppShell({ title, subtitle, actions, hideYearSwitcher, children 
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex flex-col gap-3 border-b border-border bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
+        <header className="sticky top-0 z-30 flex flex-col gap-3 border-b border-border bg-white px-4 py-4 print:hidden sm:flex-row sm:items-center sm:justify-between md:px-8">
           <div className="flex items-center gap-3">
             <Button
               type="button"
@@ -54,7 +54,7 @@ export function AppShell({ title, subtitle, actions, hideYearSwitcher, children 
           </div>
         </header>
 
-        <main className={cn("flex-1 px-4 py-6 pb-24 md:px-8 md:pb-6")}>{children}</main>
+        <main className={cn("flex-1 px-4 py-6 pb-24 print:p-0 md:px-8 md:pb-6")}>{children}</main>
       </div>
 
       <BottomNav />

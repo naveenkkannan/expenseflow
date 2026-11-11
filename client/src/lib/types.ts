@@ -149,6 +149,59 @@ export interface SpendSuggestion {
   paymentMethod: PaymentMethod;
 }
 
+export interface SummaryYearItem {
+  id: string | null;
+  name: string;
+  group: string | null;
+  values: (number | null)[];
+  total: number;
+}
+
+export interface SummaryYearMonth {
+  month: number;
+  label: string;
+  inProgress: boolean;
+}
+
+export interface SummaryYear {
+  year: number;
+  months: SummaryYearMonth[];
+  fixed: SummaryYearItem[];
+  daily: SummaryYearItem[];
+  totals: { fixed: (number | null)[]; daily: (number | null)[]; out: (number | null)[] };
+  currentMonth: number | null;
+}
+
+export interface SummaryMonthFixedRow {
+  expenseId: string;
+  name: string;
+  groupName: string | null;
+  planned: number;
+  paid: number;
+  status: ExpenseStatus;
+}
+
+export interface SummaryMonthDailyRow {
+  tagId: string | null;
+  tagName: string;
+  spendCount: number;
+  amount: number;
+}
+
+export interface SummaryMonth {
+  fixed: SummaryMonthFixedRow[];
+  daily: SummaryMonthDailyRow[];
+  totals: {
+    fixedPlanned: number;
+    fixedPaid: number;
+    dailyTotal: number;
+    dailySpendCount: number;
+    totalOut: number;
+    prevMonthTotalOut: number | null;
+    daysElapsed: number;
+  };
+}
+
 export interface RecentActivity {
   id: string;
   kind: "payment" | "spend";

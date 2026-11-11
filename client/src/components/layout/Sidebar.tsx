@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, List, LogOut, Wallet, CalendarDays } from "lucide-react";
+import { LayoutDashboard, List, LogOut, Wallet, CalendarDays, FileText } from "lucide-react";
 import { useMe, useLogout } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
@@ -7,6 +7,7 @@ const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/expenses", label: "Expenses", icon: List },
   { to: "/daily", label: "Daily", icon: CalendarDays },
+  { to: "/summary", label: "Summary", icon: FileText },
 ];
 
 export function Sidebar({ className }: { className?: string }) {
@@ -14,7 +15,7 @@ export function Sidebar({ className }: { className?: string }) {
   const logout = useLogout();
 
   return (
-    <aside className={cn("sticky top-0 flex h-screen w-64 flex-col border-r border-border bg-white", className)}>
+    <aside className={cn("sticky top-0 flex h-screen w-64 flex-col border-r border-border bg-white print:hidden", className)}>
       <div className="flex items-center gap-2 px-5 py-5">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <Wallet className="h-4 w-4" />

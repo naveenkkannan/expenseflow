@@ -1,17 +1,18 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, List, CalendarDays } from "lucide-react";
+import { LayoutDashboard, List, CalendarDays, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/expenses", label: "Expenses", icon: List },
   { to: "/daily", label: "Daily", icon: CalendarDays },
+  { to: "/summary", label: "Summary", icon: FileText },
 ];
 
 export function BottomNav() {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 flex h-16 items-stretch border-t border-border bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 flex h-16 items-stretch border-t border-border bg-white pb-[env(safe-area-inset-bottom)] print:hidden md:hidden"
       aria-label="Primary"
     >
       {navItems.map((item) => (
