@@ -21,6 +21,7 @@ export interface MonthByExpense {
 export interface MonthlyEntry {
   month: string;
   planned: number;
+  daily: number;
   byExpense: MonthByExpense[];
 }
 
@@ -35,16 +36,6 @@ export interface ThisMonthEntry {
   sharePct: number;
 }
 
-export interface RecentPayment {
-  id: string;
-  expenseId: string;
-  expenseName: string;
-  color: string;
-  paidOn: string;
-  amount: number;
-  note: string | null;
-}
-
 export interface DashboardSummary {
   paidThisMonth: number;
   stillToPay: number;
@@ -53,13 +44,16 @@ export interface DashboardSummary {
   plannedPerMonth: number;
   plannedForYear: number;
   expenseCount: number;
+  dailyThisMonth: number;
+  dailyAvg: number;
+  outThisMonth: number;
 }
 
 export interface DashboardData {
   summary: DashboardSummary;
   monthly: MonthlyEntry[];
   thisMonth: ThisMonthEntry[];
-  recent: RecentPayment[];
+  recent: RecentActivity[];
 }
 
 export interface GridMonth {
@@ -165,4 +159,5 @@ export interface RecentActivity {
   note: string | null;
   expenseId: string | null;
   tagId: string | null;
+  paymentMethod: PaymentMethod | null;
 }

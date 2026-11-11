@@ -2,7 +2,6 @@ import {
   ResponsiveContainer,
   ComposedChart,
   Bar,
-  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -13,6 +12,8 @@ import type { MonthlyEntry } from "@/lib/types";
 import { formatINR } from "@/lib/utils";
 
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const DAILY_KEY = "daily";
+const DAILY_COLOR = "#9ca3af";
 
 export function MonthlyBarChart({ monthly }: { monthly: MonthlyEntry[] }) {
   const expenseMeta = new Map<string, { name: string; color: string }>();
@@ -28,7 +29,7 @@ export function MonthlyBarChart({ monthly }: { monthly: MonthlyEntry[] }) {
   const data = monthly.map((m, i) => {
     const row: Record<string, number | string> = {
       month: MONTH_LABELS[i] ?? m.month,
-      planned: m.planned,
+      [DAILY_KEY]: m.daily,
     };
     for (const e of m.byExpense) {
       row[e.expenseId] = e.paid;
@@ -50,26 +51,18 @@ export function MonthlyBarChart({ monthly }: { monthly: MonthlyEntry[] }) {
         />
         <Tooltip
           formatter={(value: number, key: string) => {
-            if (key === "planned") return [formatINR(value), "Plan"];
+            if (key === DAILY_KEY) return [formatINR(value), "Daily spending"];
             return [formatINR(value), expenseMeta.get(key)?.name ?? key];
           }}
         />
         <Legend
-          formatter={(value: string) => expenseMeta.get(value)?.name ?? value}
+          formatter={(value: string) => (value === DAILY_KEY ? "Daily spending" : expenseMeta.get(value)?.name ?? value)}
           wrapperStyle={{ fontSize: 12 }}
         />
         {expenseIds.map((id) => (
           <Bar key={id} dataKey={id} stackId="paid" fill={expenseMeta.get(id)!.color} radius={0} />
         ))}
-        <Line
-          type="monotone"
-          dataKey="planned"
-          stroke="hsl(240 6% 46%)"
-          strokeDasharray="4 4"
-          strokeWidth={2}
-          dot={false}
-          legendType="none"
-        />
+        <Bar dataKey={DAILY_KEY} stackId="paid" fill={DAILY_COLOR} radius={0} />
       </ComposedChart>
     </ResponsiveContainer>
   );

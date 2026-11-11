@@ -103,18 +103,21 @@ BEGIN
       'amount', amount,
       'note', note,
       'expenseId', expense_id,
-      'tagId', tag_id
+      'tagId', tag_id,
+      'paymentMethod', payment_method
     ) ORDER BY date DESC, created_at DESC), '[]'::jsonb)
   INTO v_recent
   FROM (
     SELECT p.id, 'payment' AS kind, p.paid_on AS date, e.name AS name, e.color AS color,
-           p.amount, p.note, p.expense_id AS expense_id, NULL::uuid AS tag_id, p.created_at
+           p.amount, p.note, p.expense_id AS expense_id, NULL::uuid AS tag_id,
+           NULL::text AS payment_method, p.created_at
     FROM payments p
     JOIN expenses e ON e.id = p.expense_id
     WHERE p.user_id = p_user_id
     UNION ALL
     SELECT s.id, 'spend' AS kind, s.spent_on AS date, COALESCE(s.note, t.name, 'Spend') AS name,
-           COALESCE(t.color, '#9ca3af') AS color, s.amount, s.note, NULL::uuid AS expense_id, s.tag_id, s.created_at
+           COALESCE(t.color, '#9ca3af') AS color, s.amount, s.note, NULL::uuid AS expense_id, s.tag_id,
+           s.payment_method, s.created_at
     FROM spends s
     LEFT JOIN spend_tags t ON t.id = s.tag_id
     WHERE s.user_id = p_user_id
