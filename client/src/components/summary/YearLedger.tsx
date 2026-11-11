@@ -71,6 +71,7 @@ export function YearLedger({
                 <button
                   type="button"
                   onClick={() => onMonthClick(m.month)}
+                  title={m.inProgress ? `${m.label} — in progress` : m.label}
                   className={cn(
                     "flex h-11 w-full min-w-[56px] items-center justify-center gap-0.5 hover:bg-secondary",
                     m.inProgress && "font-semibold text-foreground"
