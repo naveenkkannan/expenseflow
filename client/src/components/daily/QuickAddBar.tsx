@@ -67,8 +67,8 @@ export function QuickAddBar({
           ))}
         </div>
       )}
-      <form onSubmit={handleAdd} className="flex items-center gap-2">
-        <div className="relative flex-1">
+      <form onSubmit={handleAdd} className="flex items-center gap-1.5">
+        <div className="relative min-w-0 flex-1">
           <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
             ₹
           </span>
@@ -86,7 +86,7 @@ export function QuickAddBar({
           />
         </div>
         <Select value={tagId ?? NONE_VALUE} onValueChange={(v) => setTagId(v === NONE_VALUE ? null : v)}>
-          <SelectTrigger className="w-28 shrink-0" aria-label="Tag">
+          <SelectTrigger className="w-20 shrink-0 px-2" aria-label="Tag">
             <SelectValue placeholder="Tag" />
           </SelectTrigger>
           <SelectContent>
@@ -108,7 +108,7 @@ export function QuickAddBar({
         >
           <MoreHorizontal className="h-4 w-4" />
         </Button>
-        <Button type="submit" className="shrink-0" disabled={createSpend.isPending}>
+        <Button type="submit" className="h-11 shrink-0 px-3" disabled={createSpend.isPending}>
           Add
         </Button>
       </form>

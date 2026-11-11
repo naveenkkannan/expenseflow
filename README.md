@@ -4,7 +4,7 @@ A private, single-user web app that shows where your money goes each month.
 
 ## Stack
 
-- `client/` — Vite, React, TypeScript, Tailwind, shadcn/ui, React Router, TanStack Query, Recharts
+- `client/` — Vite, React, TypeScript, Tailwind, shadcn/ui, React Router, TanStack Query, Recharts, vite-plugin-pwa
 - `server/` — Express, TypeScript, zod, pg (no ORM)
 - `db/` — SQL migrations, functions, and seed scripts (Postgres on Neon)
 
@@ -68,7 +68,10 @@ npm run reset-password -- you@example.com new-password
 npm test
 ```
 
-Runs the server test suite (Vitest), which covers the SQL functions' status rules and amount-change behaviour, plus auth and route tests.
+Runs the server test suite (Vitest), which covers the SQL functions' status
+rules, amount-change behaviour, planned-year/ended-expense calculations, and
+daily spending (totals, averages, tag grouping/deletion), plus auth and
+route tests for all API routes.
 
 ## Deployment (Netlify + Render)
 
@@ -116,8 +119,42 @@ In Netlify's site settings, set:
 2. Set `VITE_API_URL` on Netlify to that URL and deploy the frontend.
 3. Set `CORS_ORIGIN` on Render to the Netlify URL and redeploy the backend.
 
+## Daily spending
+
+Alongside fixed expenses, the app tracks ad-hoc daily spending:
+
+- `db/migrations/002_spends.sql` adds `spend_tags` (user-defined, optional
+  tags with a colour) and `spends` (amount, date, tag, payment method,
+  note).
+- `db/functions/007_spends.sql` has the SQL functions: `get_daily_month`
+  (totals, average, tag breakdown, day-grouped entries, and a full-month
+  calendar — all tag-filterable), `get_spend_suggestions` (frequent
+  note/tag/amount/method combos from the last 90 days), and CRUD for
+  spends and tags.
+- API routes: `GET /api/daily`, `GET /api/daily/suggestions`,
+  `POST /api/spends`, `PATCH`/`DELETE /api/spends/:id`,
+  `GET`/`POST /api/spend-tags`, `PATCH`/`DELETE /api/spend-tags/:id`.
+- The Daily page (`/daily`) is mobile-first: a fixed quick-add bar with
+  "often used" suggestions, List and Calendar views, and a shared
+  add/edit sheet (bottom sheet on mobile, dialog on desktop).
+- `get_expense_grid` also returns `plannedYear`/`paidYear` (using only the
+  months an expense was active, via its amount history) and
+  `monthsLeft`/`ended`, and `get_dashboard` returns daily-spending totals
+  plus a merged `recent` list (`kind: "payment" | "spend"`).
+
+After pulling this change, run `npm run db:migrate` to create the new
+tables and (re)install the updated functions.
+
+## PWA
+
+The client is installable: `vite-plugin-pwa` precaches the app shell
+(built JS/CSS/HTML and the manifest/icon) so the UI loads offline, but it
+never caches `/api/*` — those requests always hit the network, since
+they're authenticated. Re-run `npm run build -w client` after client
+changes to regenerate the service worker.
+
 ## Notes
 
 - All business logic (status rules, dashboard aggregation, amount changes) lives in Postgres functions under `db/functions`. Express routes are thin wrappers that validate input with zod and call a single function.
 - There is intentionally no "copy from last year" feature — expenses stay active across years until you end them.
-- "Current month" for status purposes is computed in the Asia/Kolkata time zone.
+- "Current month" and "today" for status and daily-spending purposes are computed in the Asia/Kolkata time zone.
