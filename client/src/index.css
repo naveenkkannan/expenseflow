@@ -29,6 +29,11 @@
 }
 
 @layer base {
+  html {
+    /* Tailwind's spacing/type scale is rem-based, so this shrinks the
+       whole UI uniformly — matching the denser look of ~90% browser zoom. */
+    font-size: 90%;
+  }
   * {
     @apply border-border;
   }
