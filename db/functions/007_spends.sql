@@ -4,13 +4,15 @@ LANGUAGE sql
 STABLE
 AS $$
   SELECT COALESCE(jsonb_agg(jsonb_build_object(
-    'id', id, 'name', name, 'color', color, 'sortOrder', sort_order
+    'id', id, 'name', name, 'color', color, 'sortOrder', sort_order, 'type', type
   ) ORDER BY sort_order, name), '[]'::jsonb)
   FROM spend_tags
   WHERE user_id = p_user_id;
 $$;
 
-CREATE OR REPLACE FUNCTION create_spend_tag(p_user_id UUID, p_name TEXT, p_color TEXT)
+DROP FUNCTION IF EXISTS create_spend_tag(UUID, TEXT, TEXT);
+
+CREATE OR REPLACE FUNCTION create_spend_tag(p_user_id UUID, p_name TEXT, p_color TEXT, p_type TEXT DEFAULT 'need')
 RETURNS jsonb
 LANGUAGE plpgsql
 AS $$
@@ -21,15 +23,23 @@ BEGIN
   SELECT COALESCE(MAX(sort_order), 0) + 1 INTO v_sort_order
   FROM spend_tags WHERE user_id = p_user_id;
 
-  INSERT INTO spend_tags (user_id, name, color, sort_order)
-  VALUES (p_user_id, p_name, p_color, v_sort_order)
+  INSERT INTO spend_tags (user_id, name, color, sort_order, type)
+  VALUES (p_user_id, p_name, p_color, v_sort_order, p_type)
   RETURNING id INTO v_id;
 
-  RETURN jsonb_build_object('id', v_id, 'name', p_name, 'color', p_color, 'sortOrder', v_sort_order);
+  RETURN jsonb_build_object('id', v_id, 'name', p_name, 'color', p_color, 'sortOrder', v_sort_order, 'type', p_type);
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION update_spend_tag(p_user_id UUID, p_tag_id UUID, p_name TEXT, p_color TEXT)
+DROP FUNCTION IF EXISTS update_spend_tag(UUID, UUID, TEXT, TEXT);
+
+CREATE OR REPLACE FUNCTION update_spend_tag(
+  p_user_id UUID,
+  p_tag_id UUID,
+  p_name TEXT,
+  p_color TEXT,
+  p_type TEXT DEFAULT NULL
+)
 RETURNS jsonb
 LANGUAGE plpgsql
 AS $$
@@ -37,17 +47,18 @@ DECLARE
   v_name TEXT;
   v_color TEXT;
   v_sort_order INTEGER;
+  v_type TEXT;
 BEGIN
   UPDATE spend_tags
-  SET name = COALESCE(p_name, name), color = COALESCE(p_color, color)
+  SET name = COALESCE(p_name, name), color = COALESCE(p_color, color), type = COALESCE(p_type, type)
   WHERE id = p_tag_id AND user_id = p_user_id
-  RETURNING name, color, sort_order INTO v_name, v_color, v_sort_order;
+  RETURNING name, color, sort_order, type INTO v_name, v_color, v_sort_order, v_type;
 
   IF NOT FOUND THEN
     RAISE EXCEPTION 'tag_not_found' USING ERRCODE = 'P0002';
   END IF;
 
-  RETURN jsonb_build_object('id', p_tag_id, 'name', v_name, 'color', v_color, 'sortOrder', v_sort_order);
+  RETURN jsonb_build_object('id', p_tag_id, 'name', v_name, 'color', v_color, 'sortOrder', v_sort_order, 'type', v_type);
 END;
 $$;
 

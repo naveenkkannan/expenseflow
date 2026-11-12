@@ -1,6 +1,10 @@
 -- Long-format rows for the year ledger: one row per expense per month it
 -- was active, and one row per tag per month it has spends. Only months
 -- that apply are returned; the API fills the rest with null ("–").
+-- (Dropped first: CREATE OR REPLACE can't change a TABLE function's OUT
+-- parameters, which the `type` column addition does.)
+DROP FUNCTION IF EXISTS fn_year_summary(uuid, integer);
+
 CREATE OR REPLACE FUNCTION fn_year_summary(p_user UUID, p_year INTEGER)
 RETURNS TABLE (
   kind TEXT,
@@ -10,7 +14,8 @@ RETURNS TABLE (
   month INTEGER,
   planned NUMERIC,
   paid NUMERIC,
-  spend_count INTEGER
+  spend_count INTEGER,
+  type TEXT
 )
 LANGUAGE plpgsql
 AS $$
@@ -29,7 +34,8 @@ BEGIN
       m.month_num AS month,
       expense_amount_at(e.id, m.month_date) AS planned,
       COALESCE(pa.paid, 0) AS paid,
-      NULL::integer AS spend_count
+      NULL::integer AS spend_count,
+      e.type AS type
     FROM expenses e
     LEFT JOIN expense_groups g ON g.id = e.group_id
     CROSS JOIN months m
@@ -51,11 +57,12 @@ BEGIN
       EXTRACT(MONTH FROM s.spent_on)::integer AS month,
       NULL::numeric AS planned,
       SUM(s.amount) AS paid,
-      COUNT(*)::integer AS spend_count
+      COUNT(*)::integer AS spend_count,
+      COALESCE(t.type, 'need') AS type
     FROM spends s
     LEFT JOIN spend_tags t ON t.id = s.tag_id
     WHERE s.user_id = p_user AND EXTRACT(YEAR FROM s.spent_on) = p_year
-    GROUP BY s.tag_id, t.name, EXTRACT(MONTH FROM s.spent_on)
+    GROUP BY s.tag_id, t.name, t.type, EXTRACT(MONTH FROM s.spent_on)
   )
   SELECT * FROM fixed_rows
   UNION ALL
@@ -95,13 +102,14 @@ BEGIN
       'groupName', group_name,
       'planned', planned,
       'paid', paid,
+      'type', type,
       'status', expense_status(active_from, active_to, v_month_start, v_current_month, planned, paid)
     ) ORDER BY name), '[]'::jsonb),
     COALESCE(SUM(planned), 0),
     COALESCE(SUM(paid), 0)
   INTO v_fixed, v_fixed_planned, v_fixed_paid
   FROM (
-    SELECT e.id, e.name, g.name AS group_name, e.active_from, e.active_to,
+    SELECT e.id, e.name, g.name AS group_name, e.active_from, e.active_to, e.type,
            COALESCE(expense_amount_at(e.id, v_month_start), 0) AS planned,
            COALESCE(pa.paid, 0) AS paid
     FROM expenses e
@@ -119,15 +127,17 @@ BEGIN
       'tagId', tag_id,
       'tagName', tag_name,
       'spendCount', spend_count,
-      'amount', amount
+      'amount', amount,
+      'type', type
     ) ORDER BY amount DESC), '[]'::jsonb)
   INTO v_daily
   FROM (
-    SELECT s.tag_id, COALESCE(t.name, 'Untagged') AS tag_name, COUNT(*) AS spend_count, SUM(s.amount) AS amount
+    SELECT s.tag_id, COALESCE(t.name, 'Untagged') AS tag_name, COUNT(*) AS spend_count, SUM(s.amount) AS amount,
+           COALESCE(t.type, 'need') AS type
     FROM spends s
     LEFT JOIN spend_tags t ON t.id = s.tag_id
     WHERE s.user_id = p_user AND s.spent_on BETWEEN v_month_start AND v_month_end
-    GROUP BY s.tag_id, t.name
+    GROUP BY s.tag_id, t.name, t.type
   ) dt;
 
   -- Computed directly from spends (not by summing the tag rows above) so a

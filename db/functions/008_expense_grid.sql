@@ -24,7 +24,7 @@ BEGIN
   DROP TABLE IF EXISTS _grid_months;
 
   CREATE TEMP TABLE _grid_expenses ON COMMIT DROP AS
-  SELECT e.id, e.name, e.color, e.group_id, g.name AS group_name,
+  SELECT e.id, e.name, e.color, e.type, e.group_id, g.name AS group_name,
          e.active_from, e.active_to,
          expense_amount_at(e.id, GREATEST(v_current_month, e.active_from)) AS current_amount,
          COALESCE((SELECT SUM(amount) FROM payments WHERE expense_id = e.id), 0) AS paid_so_far,
@@ -61,6 +61,7 @@ BEGIN
       'id', ge.id,
       'name', ge.name,
       'color', ge.color,
+      'type', ge.type,
       'groupId', ge.group_id,
       'groupName', ge.group_name,
       'currentAmount', ge.current_amount,

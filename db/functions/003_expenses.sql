@@ -1,10 +1,16 @@
+-- Dropped first: adding a parameter (even with a default) creates a
+-- separate overload rather than replacing the old signature, which then
+-- makes 6-argument calls ambiguous between the two.
+DROP FUNCTION IF EXISTS create_expense(UUID, TEXT, UUID, TEXT, NUMERIC, DATE);
+
 CREATE OR REPLACE FUNCTION create_expense(
   p_user_id UUID,
   p_name TEXT,
   p_group_id UUID,
   p_color TEXT,
   p_amount NUMERIC,
-  p_active_from DATE
+  p_active_from DATE,
+  p_type TEXT DEFAULT 'need'
 )
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -12,8 +18,8 @@ AS $$
 DECLARE
   v_id UUID;
 BEGIN
-  INSERT INTO expenses (user_id, group_id, name, color, active_from)
-  VALUES (p_user_id, p_group_id, p_name, p_color, p_active_from)
+  INSERT INTO expenses (user_id, group_id, name, color, active_from, type)
+  VALUES (p_user_id, p_group_id, p_name, p_color, p_active_from, p_type)
   RETURNING id INTO v_id;
 
   INSERT INTO expense_amounts (expense_id, effective_from, amount)
@@ -49,6 +55,8 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS update_expense(UUID, UUID, TEXT, UUID, TEXT, DATE, BOOLEAN);
+
 CREATE OR REPLACE FUNCTION update_expense(
   p_user_id UUID,
   p_expense_id UUID,
@@ -56,7 +64,8 @@ CREATE OR REPLACE FUNCTION update_expense(
   p_group_id UUID,
   p_color TEXT,
   p_active_to DATE,
-  p_clear_active_to BOOLEAN
+  p_clear_active_to BOOLEAN,
+  p_type TEXT DEFAULT NULL
 )
 RETURNS VOID
 LANGUAGE plpgsql
@@ -67,6 +76,7 @@ BEGIN
     name = COALESCE(p_name, name),
     group_id = CASE WHEN p_group_id IS NOT NULL THEN p_group_id ELSE group_id END,
     color = COALESCE(p_color, color),
+    type = COALESCE(p_type, type),
     active_to = CASE
       WHEN p_clear_active_to THEN NULL
       WHEN p_active_to IS NOT NULL THEN p_active_to
