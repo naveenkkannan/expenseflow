@@ -13,9 +13,12 @@ router.get(
   })
 );
 
+const typeSchema = z.enum(["need", "want", "investment"]);
+
 const createSchema = z.object({
   name: z.string().trim().min(1).max(100),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  type: typeSchema.optional(),
 });
 
 router.post(
@@ -27,10 +30,11 @@ router.post(
       return;
     }
     try {
-      const result = await pool.query("SELECT create_spend_tag($1, $2, $3) AS data", [
+      const result = await pool.query("SELECT create_spend_tag($1, $2, $3, $4) AS data", [
         req.userId,
         parsed.data.name,
         parsed.data.color,
+        parsed.data.type ?? "need",
       ]);
       res.status(201).json(result.rows[0].data);
     } catch (err) {
@@ -42,6 +46,7 @@ router.post(
 const updateSchema = z.object({
   name: z.string().trim().min(1).max(100).optional(),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  type: typeSchema.optional(),
 });
 
 router.patch(
@@ -53,11 +58,12 @@ router.patch(
       return;
     }
     try {
-      const result = await pool.query("SELECT update_spend_tag($1, $2, $3, $4) AS data", [
+      const result = await pool.query("SELECT update_spend_tag($1, $2, $3, $4, $5) AS data", [
         req.userId,
         req.params.id,
         parsed.data.name ?? null,
         parsed.data.color ?? null,
+        parsed.data.type ?? null,
       ]);
       res.json(result.rows[0].data);
     } catch (err) {

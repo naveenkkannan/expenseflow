@@ -2,7 +2,15 @@ import { Router } from "express";
 import { z } from "zod";
 import { pool } from "../db.js";
 import { asyncHandler } from "../lib/errors.js";
-import { buildYearSummary, yearSummaryToCsv, monthSummaryToCsv, type YearSummaryRow, type MonthSummary } from "../lib/summary.js";
+import {
+  buildYearSummary,
+  buildTypeSummary,
+  yearSummaryToCsv,
+  monthSummaryToCsv,
+  type YearSummaryRow,
+  type MonthSummary,
+  type TypeSummaryRow,
+} from "../lib/summary.js";
 
 const router = Router();
 
@@ -13,6 +21,11 @@ const yearQuerySchema = z.object({
 const monthQuerySchema = z.object({
   year: z.coerce.number().int().min(2000).max(2100),
   month: z.coerce.number().int().min(1).max(12),
+});
+
+const typesQuerySchema = z.object({
+  year: z.coerce.number().int().min(2000).max(2100),
+  month: z.coerce.number().int().min(1).max(12).optional(),
 });
 
 async function getCurrentYearMonth(): Promise<{ year: number; month: number }> {
@@ -58,6 +71,24 @@ router.get(
     }
     const summary = await loadMonthSummary(req.userId!, parsed.data.year, parsed.data.month);
     res.json(summary);
+  })
+);
+
+router.get(
+  "/types",
+  asyncHandler(async (req, res) => {
+    const parsed = typesQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: "invalid_input", message: "year is required" } });
+      return;
+    }
+    const { year, month } = parsed.data;
+    const result = await pool.query<TypeSummaryRow>("SELECT * FROM fn_type_summary($1, $2, $3)", [
+      req.userId,
+      year,
+      month ?? null,
+    ]);
+    res.json(buildTypeSummary(result.rows));
   })
 );
 

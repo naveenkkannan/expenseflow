@@ -25,12 +25,15 @@ router.get(
   })
 );
 
+const typeSchema = z.enum(["need", "want", "investment"]);
+
 const createSchema = z.object({
   name: z.string().trim().min(1).max(100),
   groupId: z.string().uuid().nullable().optional(),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   amount: z.number().positive(),
   activeFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  type: typeSchema.optional(),
 });
 
 router.post(
@@ -41,10 +44,10 @@ router.post(
       res.status(400).json({ error: { code: "invalid_input", message: "Invalid expense data" } });
       return;
     }
-    const { name, groupId, color, amount, activeFrom } = parsed.data;
+    const { name, groupId, color, amount, activeFrom, type } = parsed.data;
     const result = await pool.query(
-      "SELECT create_expense($1, $2, $3, $4, $5, $6) AS data",
-      [req.userId, name, groupId ?? null, color, amount, activeFrom]
+      "SELECT create_expense($1, $2, $3, $4, $5, $6, $7) AS data",
+      [req.userId, name, groupId ?? null, color, amount, activeFrom, type ?? "need"]
     );
     res.status(201).json(result.rows[0].data);
   })
@@ -57,6 +60,7 @@ const updateSchema = z.object({
   amount: z.number().positive().optional(),
   amountFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   activeTo: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  type: typeSchema.optional(),
 });
 
 router.patch(
@@ -76,11 +80,11 @@ router.patch(
 
     try {
       const hasBasicFields =
-        data.name !== undefined || data.color !== undefined || "activeTo" in req.body;
+        data.name !== undefined || data.color !== undefined || data.type !== undefined || "activeTo" in req.body;
       if (hasBasicFields) {
         const clearActiveTo = "activeTo" in req.body && data.activeTo === null;
         await pool.query(
-          "SELECT update_expense($1, $2, $3, NULL, $4, $5, $6)",
+          "SELECT update_expense($1, $2, $3, NULL, $4, $5, $6, $7)",
           [
             req.userId,
             req.params.id,
@@ -88,6 +92,7 @@ router.patch(
             data.color ?? null,
             clearActiveTo ? null : data.activeTo ?? null,
             clearActiveTo,
+            data.type ?? null,
           ]
         );
       }

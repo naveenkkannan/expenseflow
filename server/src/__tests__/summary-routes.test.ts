@@ -79,4 +79,21 @@ describe("summary routes", () => {
     expect(res.headers["content-disposition"]).toContain("expense-flow-2026-03.csv");
     expect(res.text).toContain("Summary Route Expense");
   });
+
+  it("gets the needs/wants/investments breakdown for a month, summing to total out", async () => {
+    const res = await request(app).get("/api/summary/types?year=2026&month=3").set("Cookie", cookie);
+    expect(res.status).toBe(200);
+    const sum = res.body.types.reduce((s: number, t: any) => s + t.amount, 0);
+    expect(sum).toBeCloseTo(res.body.total, 2);
+    expect(res.body.total).toBeCloseTo(575, 2);
+    const needType = res.body.types.find((t: any) => t.type === "need");
+    expect(needType.items.some((i: any) => i.name === "Summary Route Expense")).toBe(true);
+    expect(res.body.types.every((t: any) => t.amount > 0)).toBe(true);
+  });
+
+  it("gets the needs/wants/investments breakdown year-to-date when month is omitted", async () => {
+    const res = await request(app).get("/api/summary/types?year=2026").set("Cookie", cookie);
+    expect(res.status).toBe(200);
+    expect(res.body.total).toBeGreaterThanOrEqual(575);
+  });
 });

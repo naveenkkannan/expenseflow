@@ -38,6 +38,7 @@ describe("spend-tags + spends + daily routes", () => {
       .send({ name: "Groceries", color: "#16a34a" });
     expect(res.status).toBe(201);
     expect(res.body.name).toBe("Groceries");
+    expect(res.body.type).toBe("need");
     tagId = res.body.id;
   });
 
@@ -62,6 +63,15 @@ describe("spend-tags + spends + daily routes", () => {
       .send({ name: "Food" });
     expect(res.status).toBe(200);
     expect(res.body.name).toBe("Food");
+  });
+
+  it("sets a spend tag's type", async () => {
+    const res = await request(app)
+      .patch(`/api/spend-tags/${tagId}`)
+      .set("Cookie", cookie)
+      .send({ type: "want" });
+    expect(res.status).toBe(200);
+    expect(res.body.type).toBe("want");
   });
 
   it("creates a spend", async () => {

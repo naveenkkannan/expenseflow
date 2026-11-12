@@ -74,7 +74,32 @@ describe("groups + expenses + payments routes", () => {
   it("gets the expense grid for the year", async () => {
     const res = await request(app).get("/api/expenses?year=2026").set("Cookie", cookie);
     expect(res.status).toBe(200);
-    expect(res.body.expenses.some((e: any) => e.id === expenseId)).toBe(true);
+    const expense = res.body.expenses.find((e: any) => e.id === expenseId);
+    expect(expense).toBeDefined();
+    expect(expense.type).toBe("need");
+  });
+
+  it("creates an expense with an explicit type and can update it", async () => {
+    const createRes = await request(app)
+      .post("/api/expenses")
+      .set("Cookie", cookie)
+      .send({ name: "Investment Expense", color: "#00ff00", amount: 100, activeFrom: "2026-01-01", type: "investment" });
+    expect(createRes.status).toBe(201);
+    const investmentExpenseId = createRes.body.id;
+
+    const gridRes = await request(app).get("/api/expenses?year=2026").set("Cookie", cookie);
+    expect(gridRes.body.expenses.find((e: any) => e.id === investmentExpenseId).type).toBe("investment");
+
+    const updateRes = await request(app)
+      .patch(`/api/expenses/${investmentExpenseId}`)
+      .set("Cookie", cookie)
+      .send({ type: "want" });
+    expect(updateRes.status).toBe(200);
+
+    const gridAfter = await request(app).get("/api/expenses?year=2026").set("Cookie", cookie);
+    expect(gridAfter.body.expenses.find((e: any) => e.id === investmentExpenseId).type).toBe("want");
+
+    await request(app).delete(`/api/expenses/${investmentExpenseId}`).set("Cookie", cookie);
   });
 
   it("updates the expense amount from a chosen month", async () => {
