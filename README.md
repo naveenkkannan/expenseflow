@@ -145,6 +145,29 @@ Alongside fixed expenses, the app tracks ad-hoc daily spending:
 After pulling this change, run `npm run db:migrate` to create the new
 tables and (re)install the updated functions.
 
+## Summary page
+
+`/summary` gives a Year ledger and a printable Month statement:
+
+- `db/functions/010_summary.sql` has `fn_year_summary` (long-format rows,
+  one per expense/tag per month that applies) and `fn_month_summary`
+  (one month's fixed/daily statement plus totals, including the previous
+  month's total out).
+- API: `GET /api/summary/year?year=YYYY`, `GET /api/summary/month?year=&month=`,
+  and their `.csv` equivalents (UTF-8 BOM, plain numbers, for Excel).
+- Every expense and spend tag also has a `type` — `need`, `want`, or
+  `investment` (`db/migrations/004_expense_tag_type.sql`), set via a
+  segmented control wherever expenses/tags are created or edited. A
+  spend's type always follows its tag's current type; nothing is stored
+  on the spend itself.
+- `fn_type_summary(user, year, month?)` and `GET /api/summary/types`
+  give the needs/wants/investments breakdown (the whole period's `type`
+  totals always add up to Total out), rendered as a nested SVG donut
+  (inner ring by type, outer ring by item) with an accessible list
+  alongside it.
+- Export PDF uses `window.print()` with Tailwind's `print:` variant to
+  hide the chrome; Export CSV links straight to the `.csv` routes.
+
 ## PWA
 
 The client is installable: `vite-plugin-pwa` precaches the app shell
