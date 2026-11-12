@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import type { ExpenseGrid, Group, Payment } from "@/lib/types";
+import type { ExpenseGrid, ExpenseType, Group, Payment } from "@/lib/types";
 
 export function useExpenseGrid(year: number) {
   return useQuery<ExpenseGrid>({
@@ -24,6 +24,7 @@ export interface CreateExpenseInput {
   color: string;
   amount: number;
   activeFrom: string;
+  type?: ExpenseType;
 }
 
 export function useCreateExpense() {
@@ -42,6 +43,7 @@ export interface UpdateExpenseInput {
   amount?: number;
   amountFrom?: string;
   activeTo?: string | null;
+  type?: ExpenseType;
 }
 
 export function useUpdateExpense() {

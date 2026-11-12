@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import type { DailyMonth, PaymentMethod, SpendSuggestion, SpendTag } from "@/lib/types";
+import type { DailyMonth, ExpenseType, PaymentMethod, SpendSuggestion, SpendTag } from "@/lib/types";
 
 export function useDailyMonth(year: number, month: number, tagId: string | null) {
   return useQuery<DailyMonth>({
@@ -85,7 +85,8 @@ function useInvalidateSpendTags() {
 export function useCreateSpendTag() {
   const invalidate = useInvalidateSpendTags();
   return useMutation({
-    mutationFn: (data: { name: string; color: string }) => api.post<SpendTag>("/spend-tags", data),
+    mutationFn: (data: { name: string; color: string; type?: ExpenseType }) =>
+      api.post<SpendTag>("/spend-tags", data),
     onSuccess: invalidate,
   });
 }
@@ -93,7 +94,7 @@ export function useCreateSpendTag() {
 export function useUpdateSpendTag() {
   const invalidate = useInvalidateSpendTags();
   return useMutation({
-    mutationFn: ({ id, ...data }: { id: string; name?: string; color?: string }) =>
+    mutationFn: ({ id, ...data }: { id: string; name?: string; color?: string; type?: ExpenseType }) =>
       api.patch<SpendTag>(`/spend-tags/${id}`, data),
     onSuccess: invalidate,
   });

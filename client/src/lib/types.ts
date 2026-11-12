@@ -1,4 +1,5 @@
 export type ExpenseStatus = "not_active" | "upcoming" | "paid" | "partial" | "missed" | "to_pay";
+export type ExpenseType = "need" | "want" | "investment";
 
 export interface User {
   id: string;
@@ -67,6 +68,7 @@ export interface GridExpense {
   id: string;
   name: string;
   color: string;
+  type: ExpenseType;
   groupId: string | null;
   groupName: string | null;
   currentAmount: number;
@@ -100,6 +102,7 @@ export interface SpendTag {
   name: string;
   color: string;
   sortOrder: number;
+  type: ExpenseType;
 }
 
 export interface SpendEntry {
@@ -153,6 +156,7 @@ export interface SummaryYearItem {
   id: string | null;
   name: string;
   group: string | null;
+  type: ExpenseType;
   values: (number | null)[];
   total: number;
 }
@@ -179,6 +183,7 @@ export interface SummaryMonthFixedRow {
   planned: number;
   paid: number;
   status: ExpenseStatus;
+  type: ExpenseType;
 }
 
 export interface SummaryMonthDailyRow {
@@ -186,6 +191,7 @@ export interface SummaryMonthDailyRow {
   tagName: string;
   spendCount: number;
   amount: number;
+  type: ExpenseType;
 }
 
 export interface SummaryMonth {
@@ -200,6 +206,25 @@ export interface SummaryMonth {
     prevMonthTotalOut: number | null;
     daysElapsed: number;
   };
+}
+
+export interface TypeSummaryItem {
+  id: string | null;
+  name: string;
+  kind: "fixed" | "daily";
+  amount: number;
+}
+
+export interface TypeSummaryGroup {
+  type: ExpenseType;
+  amount: number;
+  pct: number;
+  items: TypeSummaryItem[];
+}
+
+export interface TypeSummary {
+  total: number;
+  types: TypeSummaryGroup[];
 }
 
 export interface RecentActivity {

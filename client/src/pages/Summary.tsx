@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { YearLedger } from "@/components/summary/YearLedger";
 import { MonthStatement } from "@/components/summary/MonthStatement";
+import { TypeDonut } from "@/components/summary/TypeDonut";
 import { useYear } from "@/hooks/useYear";
-import { useYearSummary, useMonthSummary } from "@/hooks/useSummary";
+import { useYearSummary, useMonthSummary, useTypeSummary } from "@/hooks/useSummary";
 import { API_BASE_URL } from "@/lib/api";
 import { cn, formatINR } from "@/lib/utils";
 
@@ -25,6 +26,7 @@ export default function Summary() {
 
   const yearQuery = useYearSummary(year);
   const monthQuery = useMonthSummary(year, month);
+  const typeQuery = useTypeSummary(year, tab === "month" ? month : undefined);
 
   function goToMonth(delta: number) {
     const d = new Date(year, month - 1 + delta, 1);
@@ -79,6 +81,24 @@ export default function Summary() {
       </div>
 
       <TotalsStrip tab={tab} year={year} month={month} yearData={yearQuery.data} monthData={monthQuery.data} />
+
+      <Card className="mt-6 print:border-0 print:shadow-none">
+        <CardHeader>
+          <CardTitle>Needs, wants and investments</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            {tab === "year"
+              ? `${year} to date`
+              : new Date(year, month - 1, 1).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
+          </p>
+        </CardHeader>
+        <CardContent>
+          {typeQuery.isLoading || !typeQuery.data ? (
+            <Skeleton className="h-48 w-full" />
+          ) : (
+            <TypeDonut data={typeQuery.data} />
+          )}
+        </CardContent>
+      </Card>
 
       <div className="mt-6">
         {tab === "year" ? (

@@ -12,9 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ColorPicker } from "@/components/expenses/ColorPicker";
+import { TypeSegmented } from "@/components/shared/TypeSegmented";
 import { useSpendTags, useCreateSpendTag, useCreateSpend, useUpdateSpend, useDeleteSpend } from "@/hooks/useDaily";
 import { cn, todayISO } from "@/lib/utils";
-import type { PaymentMethod } from "@/lib/types";
+import type { ExpenseType, PaymentMethod } from "@/lib/types";
 
 const METHODS: { value: PaymentMethod; label: string }[] = [
   { value: "upi", label: "UPI" },
@@ -62,6 +63,7 @@ export function SpendFormSheet({
   const [creatingTag, setCreatingTag] = React.useState(false);
   const [newTagName, setNewTagName] = React.useState("");
   const [newTagColor, setNewTagColor] = React.useState("#3b82f6");
+  const [newTagType, setNewTagType] = React.useState<ExpenseType>("need");
 
   React.useEffect(() => {
     if (!open) return;
@@ -80,12 +82,13 @@ export function SpendFormSheet({
     }
     setCreatingTag(false);
     setNewTagName("");
+    setNewTagType("need");
   }, [open, spend, initialAmount, initialTagId, initialPaymentMethod]);
 
   async function handleCreateTag() {
     if (!newTagName.trim()) return;
     try {
-      const tag = await createTag.mutateAsync({ name: newTagName.trim(), color: newTagColor });
+      const tag = await createTag.mutateAsync({ name: newTagName.trim(), color: newTagColor, type: newTagType });
       setTagId((tag as { id: string }).id);
       setCreatingTag(false);
       setNewTagName("");
@@ -226,6 +229,7 @@ export function SpendFormSheet({
                   </Button>
                 </div>
                 <ColorPicker value={newTagColor} onChange={setNewTagColor} />
+                <TypeSegmented value={newTagType} onChange={setNewTagType} />
               </div>
             )}
           </div>

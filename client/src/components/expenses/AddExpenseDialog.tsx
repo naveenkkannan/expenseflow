@@ -12,7 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GroupSelect } from "@/components/expenses/GroupSelect";
 import { ColorPicker } from "@/components/expenses/ColorPicker";
+import { TypeSegmented } from "@/components/shared/TypeSegmented";
 import { useCreateExpense } from "@/hooks/useExpenses";
+import type { ExpenseType } from "@/lib/types";
 
 function currentMonthValue(): string {
   const now = new Date();
@@ -25,6 +27,7 @@ export function AddExpenseDialog({ open, onOpenChange }: { open: boolean; onOpen
   const [amount, setAmount] = React.useState("");
   const [startMonth, setStartMonth] = React.useState(currentMonthValue());
   const [color, setColor] = React.useState("#3b82f6");
+  const [type, setType] = React.useState<ExpenseType>("need");
   const createExpense = useCreateExpense();
 
   React.useEffect(() => {
@@ -34,6 +37,7 @@ export function AddExpenseDialog({ open, onOpenChange }: { open: boolean; onOpen
       setAmount("");
       setStartMonth(currentMonthValue());
       setColor("#3b82f6");
+      setType("need");
     }
   }, [open]);
 
@@ -51,6 +55,7 @@ export function AddExpenseDialog({ open, onOpenChange }: { open: boolean; onOpen
         color,
         amount: parsedAmount,
         activeFrom: `${startMonth}-01`,
+        type,
       });
       toast.success("Expense added.");
       onOpenChange(false);
@@ -103,6 +108,11 @@ export function AddExpenseDialog({ open, onOpenChange }: { open: boolean; onOpen
           <div className="flex flex-col gap-1.5">
             <Label>Colour</Label>
             <ColorPicker value={color} onChange={setColor} />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Type</Label>
+            <TypeSegmented value={type} onChange={setType} />
           </div>
 
           <DialogFooter>

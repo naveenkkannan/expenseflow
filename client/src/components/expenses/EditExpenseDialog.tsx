@@ -11,8 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GroupSelect } from "@/components/expenses/GroupSelect";
+import { TypeSegmented } from "@/components/shared/TypeSegmented";
 import { useUpdateExpense } from "@/hooks/useExpenses";
-import type { GridExpense } from "@/lib/types";
+import type { ExpenseType, GridExpense } from "@/lib/types";
 
 function currentMonthValue(): string {
   const now = new Date();
@@ -39,6 +40,7 @@ export function EditExpenseDialog({
   const [amountFrom, setAmountFrom] = React.useState(currentMonthValue());
   const [ongoing, setOngoing] = React.useState(true);
   const [stopAfter, setStopAfter] = React.useState(currentMonthValue());
+  const [type, setType] = React.useState<ExpenseType>("need");
   const updateExpense = useUpdateExpense();
 
   React.useEffect(() => {
@@ -49,6 +51,7 @@ export function EditExpenseDialog({
       setAmountFrom(currentMonthValue());
       setOngoing(!expense.activeTo);
       setStopAfter(toMonthValue(expense.activeTo) || currentMonthValue());
+      setType(expense.type);
     }
   }, [open, expense]);
 
@@ -68,6 +71,7 @@ export function EditExpenseDialog({
         amount: parsedAmount,
         amountFrom: `${amountFrom}-01`,
         activeTo: ongoing ? null : `${stopAfter}-01`,
+        type,
       });
       toast.success("Expense updated.");
       onOpenChange(false);
@@ -135,6 +139,11 @@ export function EditExpenseDialog({
               onChange={(e) => setStopAfter(e.target.value)}
               disabled={ongoing}
             />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Type</Label>
+            <TypeSegmented value={type} onChange={setType} />
           </div>
 
           <DialogFooter>

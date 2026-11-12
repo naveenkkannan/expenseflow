@@ -11,7 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ColorPicker } from "@/components/expenses/ColorPicker";
+import { TypeSegmented } from "@/components/shared/TypeSegmented";
 import { useSpendTags, useCreateSpendTag, useUpdateSpendTag, useDeleteSpendTag } from "@/hooks/useDaily";
+import type { ExpenseType } from "@/lib/types";
 
 export function ManageTagsDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { data: tags, isLoading } = useSpendTags();
@@ -21,15 +23,17 @@ export function ManageTagsDialog({ open, onOpenChange }: { open: boolean; onOpen
 
   const [newName, setNewName] = React.useState("");
   const [newColor, setNewColor] = React.useState("#3b82f6");
+  const [newType, setNewType] = React.useState<ExpenseType>("need");
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [editingName, setEditingName] = React.useState("");
   const [editingColor, setEditingColor] = React.useState("#3b82f6");
+  const [editingType, setEditingType] = React.useState<ExpenseType>("need");
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!newName.trim()) return;
     try {
-      await createTag.mutateAsync({ name: newName.trim(), color: newColor });
+      await createTag.mutateAsync({ name: newName.trim(), color: newColor, type: newType });
       setNewName("");
       toast.success("Tag added.");
     } catch {
@@ -40,7 +44,7 @@ export function ManageTagsDialog({ open, onOpenChange }: { open: boolean; onOpen
   async function handleSave(id: string) {
     if (!editingName.trim()) return;
     try {
-      await updateTag.mutateAsync({ id, name: editingName.trim(), color: editingColor });
+      await updateTag.mutateAsync({ id, name: editingName.trim(), color: editingColor, type: editingType });
       setEditingId(null);
       toast.success("Tag updated.");
     } catch {
@@ -87,11 +91,15 @@ export function ManageTagsDialog({ open, onOpenChange }: { open: boolean; onOpen
                     </Button>
                   </div>
                   <ColorPicker value={editingColor} onChange={setEditingColor} />
+                  <TypeSegmented value={editingType} onChange={setEditingType} />
                 </>
               ) : (
                 <div className="flex items-center gap-2">
                   <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: t.color }} aria-hidden="true" />
-                  <span className="flex-1 text-sm">{t.name}</span>
+                  <span className="flex-1 text-sm">
+                    {t.name}
+                    <span className="ml-1.5 text-xs capitalize text-muted-foreground">· {t.type}</span>
+                  </span>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -101,6 +109,7 @@ export function ManageTagsDialog({ open, onOpenChange }: { open: boolean; onOpen
                       setEditingId(t.id);
                       setEditingName(t.name);
                       setEditingColor(t.color);
+                      setEditingType(t.type);
                     }}
                   >
                     <Pencil className="h-4 w-4" />
@@ -136,6 +145,7 @@ export function ManageTagsDialog({ open, onOpenChange }: { open: boolean; onOpen
             </Button>
           </div>
           <ColorPicker value={newColor} onChange={setNewColor} />
+          <TypeSegmented value={newType} onChange={setNewType} />
         </form>
       </DialogContent>
     </Dialog>
