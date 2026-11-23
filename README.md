@@ -168,6 +168,21 @@ tables and (re)install the updated functions.
 - Export PDF uses `window.print()` with Tailwind's `print:` variant to
   hide the chrome; Export CSV links straight to the `.csv` routes.
 
+## Debts
+
+`/debts` tracks personal IOUs, independent of fixed expenses/payments:
+
+- `db/migrations/006_debts.sql` adds `debts` (person, direction
+  `owed_to_me`/`i_owe`, principal, optional due date/note) and
+  `debt_repayments` (partial repayments against a debt).
+- `db/functions/012_debts.sql` has `list_debts` (computes
+  repaid/remaining/status — a debt is "settled" once remaining ≤ 0,
+  never stored) and CRUD for both debts and repayments.
+- API: `GET`/`POST /api/debts`, `PATCH`/`DELETE /api/debts/:id`,
+  `GET`/`POST /api/debt-repayments` (filtered by `debt_id`),
+  `PATCH`/`DELETE /api/debt-repayments/:id`.
+- Debts are intentionally not reflected in Dashboard or Summary totals.
+
 ## PWA
 
 The client is installable: `vite-plugin-pwa` precaches the app shell
