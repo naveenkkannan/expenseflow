@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GroupSelect } from "@/components/expenses/GroupSelect";
 import { TypeSegmented } from "@/components/shared/TypeSegmented";
+import { MonthInput } from "@/components/shared/MonthInput";
 import { useUpdateExpense } from "@/hooks/useExpenses";
 import type { ExpenseType, GridExpense } from "@/lib/types";
 
@@ -114,13 +115,7 @@ export function EditExpenseDialog({
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="edit-amount-from">New amount applies from</Label>
-            <Input
-              id="edit-amount-from"
-              type="month"
-              value={amountFrom}
-              onChange={(e) => setAmountFrom(e.target.value)}
-              required
-            />
+            <MonthInput id="edit-amount-from" value={amountFrom} onChange={setAmountFrom} />
             <p className="text-xs text-muted-foreground">Earlier months keep their current amount.</p>
           </div>
 
@@ -132,13 +127,7 @@ export function EditExpenseDialog({
                 No end (ongoing)
               </label>
             </div>
-            <Input
-              id="edit-stop-after"
-              type="month"
-              value={stopAfter}
-              onChange={(e) => setStopAfter(e.target.value)}
-              disabled={ongoing}
-            />
+            <MonthInput id="edit-stop-after" value={stopAfter} onChange={setStopAfter} disabled={ongoing} />
           </div>
 
           <div className="flex flex-col gap-1.5">

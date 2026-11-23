@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { GroupSelect } from "@/components/expenses/GroupSelect";
 import { ColorPicker } from "@/components/expenses/ColorPicker";
 import { TypeSegmented } from "@/components/shared/TypeSegmented";
+import { MonthInput } from "@/components/shared/MonthInput";
 import { useCreateExpense } from "@/hooks/useExpenses";
 import type { ExpenseType } from "@/lib/types";
 
@@ -96,13 +97,7 @@ export function AddExpenseDialog({ open, onOpenChange }: { open: boolean; onOpen
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="expense-start">Start month</Label>
-            <Input
-              id="expense-start"
-              type="month"
-              value={startMonth}
-              onChange={(e) => setStartMonth(e.target.value)}
-              required
-            />
+            <MonthInput id="expense-start" value={startMonth} onChange={setStartMonth} />
           </div>
 
           <div className="flex flex-col gap-1.5">
