@@ -5,6 +5,7 @@ import Dashboard from "@/pages/Dashboard";
 import Expenses from "@/pages/Expenses";
 import Daily from "@/pages/Daily";
 import Summary from "@/pages/Summary";
+import Debts from "@/pages/Debts";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/expenses" element={<Expenses />} />
           <Route path="/daily" element={<Daily />} />
           <Route path="/summary" element={<Summary />} />
+          <Route path="/debts" element={<Debts />} />
         </Route>
       </Routes>
     </BrowserRouter>

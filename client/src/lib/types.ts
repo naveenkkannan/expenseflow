@@ -239,3 +239,27 @@ export interface RecentActivity {
   tagId: string | null;
   paymentMethod: PaymentMethod | null;
 }
+
+export type DebtDirection = "owed_to_me" | "i_owe";
+export type DebtStatus = "open" | "settled";
+
+export interface Debt {
+  id: string;
+  personName: string;
+  direction: DebtDirection;
+  principal: number;
+  repaid: number;
+  remaining: number;
+  repaymentCount: number;
+  dueDate: string | null;
+  note: string | null;
+  status: DebtStatus;
+}
+
+export interface DebtRepayment {
+  id: string;
+  debtId: string;
+  paidOn: string;
+  amount: number;
+  note: string | null;
+}
