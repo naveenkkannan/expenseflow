@@ -1,14 +1,27 @@
 import * as React from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, CircleCheck } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { RowActionsMenu } from "@/components/shared/RowActionsMenu";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { PaymentFormDialog } from "@/components/payments/PaymentFormDialog";
 import { useDeleteExpense } from "@/hooks/useExpenses";
 import { formatINR } from "@/lib/utils";
 import type { GridExpense } from "@/lib/types";
 
 function formatMonthYear(d: string): string {
   return new Date(d).toLocaleDateString("en-IN", { month: "short", year: "numeric" });
+}
+
+function currentMonthKey(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+}
+
+function remainingThisMonth(e: GridExpense): number {
+  const entry = e.months.find((m) => m.month === currentMonthKey());
+  if (!entry) return e.currentAmount;
+  return Math.max(entry.planned - entry.paid, 0);
 }
 
 function activeSubtitle(e: GridExpense): string {
@@ -32,6 +45,7 @@ export function ExpenseTable({
   const deleteExpense = useDeleteExpense();
   const [showEnded, setShowEnded] = React.useState(false);
   const [deleteTarget, setDeleteTarget] = React.useState<GridExpense | null>(null);
+  const [payTarget, setPayTarget] = React.useState<GridExpense | null>(null);
 
   const activeExpenses = React.useMemo(() => expenses.filter((e) => !e.ended), [expenses]);
   const endedExpenses = React.useMemo(() => expenses.filter((e) => e.ended), [expenses]);
@@ -101,7 +115,18 @@ export function ExpenseTable({
           )}
         </td>
         <td className="py-2 pl-4">
-          <div className="flex justify-end">
+          <div className="flex items-center justify-end gap-1">
+            {!e.ended && (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={`Mark ${e.name} as paid this month`}
+                className="h-11 w-11"
+                onClick={() => setPayTarget(e)}
+              >
+                <CircleCheck className="h-4 w-4" />
+              </Button>
+            )}
             <RowActionsMenu label={e.name} onEdit={() => onEdit(e)} onDelete={() => setDeleteTarget(e)} />
           </div>
         </td>
@@ -184,6 +209,17 @@ export function ExpenseTable({
         description="This also deletes its payment history."
         onConfirm={handleDelete}
       />
+
+      {payTarget && (
+        <PaymentFormDialog
+          open={!!payTarget}
+          onOpenChange={(open) => !open && setPayTarget(null)}
+          expenses={[{ id: payTarget.id, name: payTarget.name }]}
+          defaultExpenseId={payTarget.id}
+          defaultAmount={remainingThisMonth(payTarget) || undefined}
+          lockExpense
+        />
+      )}
     </div>
   );
 }

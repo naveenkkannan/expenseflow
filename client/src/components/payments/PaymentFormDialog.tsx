@@ -23,29 +23,33 @@ export function PaymentFormDialog({
   onOpenChange,
   expenses,
   defaultExpenseId,
+  defaultAmount,
+  lockExpense,
   payment,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   expenses: Pick<GridExpense, "id" | "name">[];
   defaultExpenseId?: string;
+  defaultAmount?: number;
+  lockExpense?: boolean;
   payment?: Payment | null;
 }) {
   const isEdit = !!payment;
   const [expenseId, setExpenseId] = React.useState(payment?.expenseId ?? defaultExpenseId ?? "");
   const [paidOn, setPaidOn] = React.useState(payment?.paidOn ?? todayISO());
-  const [amount, setAmount] = React.useState(payment ? String(payment.amount) : "");
+  const [amount, setAmount] = React.useState(payment ? String(payment.amount) : defaultAmount ? String(defaultAmount) : "");
   const [note, setNote] = React.useState(payment?.note ?? "");
 
   React.useEffect(() => {
     if (open) {
       setExpenseId(payment?.expenseId ?? defaultExpenseId ?? expenses[0]?.id ?? "");
       setPaidOn(payment?.paidOn ?? todayISO());
-      setAmount(payment ? String(payment.amount) : "");
+      setAmount(payment ? String(payment.amount) : defaultAmount ? String(defaultAmount) : "");
       setNote(payment?.note ?? "");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, payment, defaultExpenseId]);
+  }, [open, payment, defaultExpenseId, defaultAmount]);
 
   const createPayment = useCreatePayment();
   const updatePayment = useUpdatePayment();
@@ -82,7 +86,7 @@ export function PaymentFormDialog({
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="payment-expense">Expense</Label>
-            <Select value={expenseId} onValueChange={setExpenseId} disabled={isEdit}>
+            <Select value={expenseId} onValueChange={setExpenseId} disabled={isEdit || lockExpense}>
               <SelectTrigger id="payment-expense">
                 <SelectValue placeholder="Choose an expense" />
               </SelectTrigger>

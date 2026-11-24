@@ -48,6 +48,18 @@ export function MonthPaymentsPanel({
   const paid = payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
   const pct = planned > 0 ? Math.min(100, Math.round((paid / planned) * 100)) : paid > 0 ? 100 : 0;
 
+  // Reset the add-payment form for the newly selected cell, prefilling
+  // the amount with what's still due so logging the usual payment is a
+  // single tap on Save instead of retyping the planned amount.
+  React.useEffect(() => {
+    if (isLoading) return;
+    const remaining = Math.max(planned - paid, 0);
+    setAmount(remaining > 0 ? String(remaining) : "");
+    setDate(todayISO());
+    setNote("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cell.expenseId, cell.month, isLoading]);
+
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     const parsedAmount = Number(amount);
@@ -145,7 +157,6 @@ export function MonthPaymentsPanel({
                 type="number"
                 min="0"
                 step="0.01"
-                placeholder={String(planned || "")}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 required
