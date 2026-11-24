@@ -103,7 +103,7 @@ export function MonthPaymentsPanel({
   }
 
   return (
-    <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <div className="flex flex-col gap-4">
       <Card>
         <CardHeader className="flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
           <div>

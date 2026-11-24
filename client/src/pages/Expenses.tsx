@@ -2,6 +2,7 @@ import * as React from "react";
 import { Plus, Settings } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExpenseTable } from "@/components/expenses/ExpenseTable";
@@ -72,7 +73,14 @@ export default function Expenses() {
         </CardContent>
       </Card>
 
-      {selected && selectedExpense && <MonthPaymentsPanel cell={selected} expense={selectedExpense} />}
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+        <DialogContent className="max-h-[85vh] max-w-xl overflow-y-auto">
+          <DialogHeader className="sr-only">
+            <DialogTitle>{selected ? `${selected.expenseName} payments` : "Payments"}</DialogTitle>
+          </DialogHeader>
+          {selected && selectedExpense && <MonthPaymentsPanel cell={selected} expense={selectedExpense} />}
+        </DialogContent>
+      </Dialog>
 
       <AddExpenseDialog open={addOpen} onOpenChange={setAddOpen} />
       <EditExpenseDialog
