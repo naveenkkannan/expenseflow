@@ -1,12 +1,11 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, List, LogOut, Wallet, CalendarDays, FileText, HandCoins } from "lucide-react";
+import { LayoutDashboard, List, LogOut, Wallet, FileText, HandCoins } from "lucide-react";
 import { useMe, useLogout } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/expenses", label: "Expenses", icon: List },
-  { to: "/daily", label: "Daily", icon: CalendarDays },
   { to: "/summary", label: "Summary", icon: FileText },
   { to: "/debts", label: "Debts", icon: HandCoins },
 ];

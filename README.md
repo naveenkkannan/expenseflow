@@ -69,9 +69,8 @@ npm test
 ```
 
 Runs the server test suite (Vitest), which covers the SQL functions' status
-rules, amount-change behaviour, planned-year/ended-expense calculations, and
-daily spending (totals, averages, tag grouping/deletion), plus auth and
-route tests for all API routes.
+rules, amount-change behaviour, and planned-year/ended-expense calculations,
+plus auth and route tests for all API routes.
 
 ## Deployment (Netlify + Render)
 
@@ -119,52 +118,23 @@ In Netlify's site settings, set:
 2. Set `VITE_API_URL` on Netlify to that URL and deploy the frontend.
 3. Set `CORS_ORIGIN` on Render to the Netlify URL and redeploy the backend.
 
-## Daily spending
-
-Alongside fixed expenses, the app tracks ad-hoc daily spending:
-
-- `db/migrations/002_spends.sql` adds `spend_tags` (user-defined, optional
-  tags with a colour) and `spends` (amount, date, tag, payment method,
-  note).
-- `db/functions/007_spends.sql` has the SQL functions: `get_daily_month`
-  (totals, average, tag breakdown, day-grouped entries, and a full-month
-  calendar — all tag-filterable), `get_spend_suggestions` (frequent
-  note/tag/amount/method combos from the last 90 days), and CRUD for
-  spends and tags.
-- API routes: `GET /api/daily`, `GET /api/daily/suggestions`,
-  `POST /api/spends`, `PATCH`/`DELETE /api/spends/:id`,
-  `GET`/`POST /api/spend-tags`, `PATCH`/`DELETE /api/spend-tags/:id`.
-- The Daily page (`/daily`) is mobile-first: a fixed quick-add bar with
-  "often used" suggestions, List and Calendar views, and a shared
-  add/edit sheet (bottom sheet on mobile, dialog on desktop).
-- `get_expense_grid` also returns `plannedYear`/`paidYear` (using only the
-  months an expense was active, via its amount history) and
-  `monthsLeft`/`ended`, and `get_dashboard` returns daily-spending totals
-  plus a merged `recent` list (`kind: "payment" | "spend"`).
-
-After pulling this change, run `npm run db:migrate` to create the new
-tables and (re)install the updated functions.
-
 ## Summary page
 
 `/summary` gives a Year ledger and a printable Month statement:
 
 - `db/functions/010_summary.sql` has `fn_year_summary` (long-format rows,
-  one per expense/tag per month that applies) and `fn_month_summary`
-  (one month's fixed/daily statement plus totals, including the previous
+  one per expense per month that applies) and `fn_month_summary` (one
+  month's fixed-expense statement plus totals, including the previous
   month's total out).
 - API: `GET /api/summary/year?year=YYYY`, `GET /api/summary/month?year=&month=`,
   and their `.csv` equivalents (UTF-8 BOM, plain numbers, for Excel).
-- Every expense and spend tag also has a `type` — `need`, `want`, or
-  `investment` (`db/migrations/004_expense_tag_type.sql`), set via a
-  segmented control wherever expenses/tags are created or edited. A
-  spend's type always follows its tag's current type; nothing is stored
-  on the spend itself.
+- Every expense also has a `type` — `need`, `want`, or `investment`
+  (`db/migrations/004_expense_tag_type.sql`), set via a segmented control
+  on the add/edit expense dialog.
 - `fn_type_summary(user, year, month?)` and `GET /api/summary/types`
-  give the needs/wants/investments breakdown (the whole period's `type`
-  totals always add up to Total out), rendered as a nested SVG donut
-  (inner ring by type, outer ring by item) with an accessible list
-  alongside it.
+  give the needs/wants/investments breakdown (the type totals always add
+  up to Total out), rendered as a nested SVG donut (inner ring by type,
+  outer ring by item) with an accessible list alongside it.
 - Export PDF uses `window.print()` with Tailwind's `print:` variant to
   hide the chrome; Export CSV links straight to the `.csv` routes.
 
@@ -195,4 +165,4 @@ changes to regenerate the service worker.
 
 - All business logic (status rules, dashboard aggregation, amount changes) lives in Postgres functions under `db/functions`. Express routes are thin wrappers that validate input with zod and call a single function.
 - There is intentionally no "copy from last year" feature — expenses stay active across years until you end them.
-- "Current month" and "today" for status and daily-spending purposes are computed in the Asia/Kolkata time zone.
+- "Current month" and "today" for status purposes are computed in the Asia/Kolkata time zone.

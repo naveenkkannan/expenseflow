@@ -1,11 +1,10 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, List, CalendarDays, FileText } from "lucide-react";
+import { LayoutDashboard, List, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/expenses", label: "Expenses", icon: List },
-  { to: "/daily", label: "Daily", icon: CalendarDays },
   { to: "/summary", label: "Summary", icon: FileText },
 ];
 

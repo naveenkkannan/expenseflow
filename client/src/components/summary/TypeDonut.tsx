@@ -77,7 +77,7 @@ function Ring({ segments, radius, strokeWidth, cx, cy }: { segments: Segment[]; 
 
 export function TypeDonut({ data }: { data: TypeSummary }) {
   if (data.types.length === 0 || data.total <= 0) {
-    return <p className="py-8 text-center text-sm text-muted-foreground">No spends or payments in this period.</p>;
+    return <p className="py-8 text-center text-sm text-muted-foreground">No payments in this period.</p>;
   }
 
   const cx = 100;
@@ -113,7 +113,7 @@ export function TypeDonut({ data }: { data: TypeSummary }) {
       ...itemWindows[j],
       color: TYPE_COLORS[t.type],
       opacity: shadeFor(j),
-      key: `${t.type}-${item.kind}-${item.id ?? "untagged"}`,
+      key: `${t.type}-${item.id}`,
     }));
   });
 
@@ -150,7 +150,7 @@ export function TypeDonut({ data }: { data: TypeSummary }) {
               <ul className="mt-1 flex flex-col gap-1">
                 {t.items.map((item, j) => (
                   <li
-                    key={`${item.kind}-${item.id ?? "untagged"}`}
+                    key={item.id}
                     className="flex items-center justify-between gap-2 py-0.5 text-sm"
                   >
                     <span className="flex min-w-0 items-center gap-2">

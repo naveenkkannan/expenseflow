@@ -104,8 +104,8 @@ export default function Summary() {
         {tab === "year" ? (
           yearQuery.isLoading || !yearQuery.data ? (
             <Skeleton className="h-96 w-full" />
-          ) : yearQuery.data.fixed.length === 0 && yearQuery.data.daily.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">No spends or payments in this period.</p>
+          ) : yearQuery.data.fixed.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">No payments in this period.</p>
           ) : (
             <YearLedger data={yearQuery.data} onMonthClick={openMonth} />
           )
@@ -144,32 +144,26 @@ function TotalsStrip({
   if (tab === "year") {
     if (!yearData) {
       return (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Skeleton className="h-24 w-full" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-24 w-full" />
         </div>
       );
     }
     const outTotal = yearData.totals.out.reduce((s: number, v) => s + (v ?? 0), 0);
-    const fixedTotal = yearData.totals.fixed.reduce((s: number, v) => s + (v ?? 0), 0);
-    const dailyTotal = yearData.totals.daily.reduce((s: number, v) => s + (v ?? 0), 0);
     const activeMonths = yearData.totals.out.filter((v) => v !== null).length || 1;
-    const sharePct = (part: number) => (outTotal > 0 ? Math.round((part / outTotal) * 100) : 0);
 
     return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <StripCard label="Total out" value={formatINR(outTotal)} hint={`${formatINR(outTotal / activeMonths)} a month on average`} />
-        <StripCard label="Fixed expenses" value={formatINR(fixedTotal)} hint={`${sharePct(fixedTotal)}% of total`} />
-        <StripCard label="Daily spending" value={formatINR(dailyTotal)} hint={`${sharePct(dailyTotal)}% of total`} />
+        <StripCard label="Expenses" value={String(yearData.fixed.length)} hint="tracked this year" />
       </div>
     );
   }
 
   if (!monthData) {
     return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Skeleton className="h-24 w-full" />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Skeleton className="h-24 w-full" />
         <Skeleton className="h-24 w-full" />
       </div>
@@ -178,21 +172,19 @@ function TotalsStrip({
   const { totals } = monthData;
   const diff = totals.prevMonthTotalOut !== null ? totals.totalOut - totals.prevMonthTotalOut : null;
   const prevLabel = MONTH_NAMES[month === 1 ? 11 : month - 2];
-  const perDay = totals.daysElapsed > 0 ? totals.dailyTotal / totals.daysElapsed : 0;
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <StripCard
         label="Total out"
         value={formatINR(totals.totalOut)}
         hint={diff === null ? undefined : `${diff >= 0 ? "+" : ""}${formatINR(diff)} vs ${prevLabel}`}
       />
       <StripCard
-        label="Fixed expenses"
-        value={formatINR(totals.fixedPaid)}
-        hint={`of ${formatINR(totals.fixedPlanned)} planned`}
+        label="Planned"
+        value={formatINR(totals.fixedPlanned)}
+        hint={totals.fixedPaid >= totals.fixedPlanned ? "All paid" : `${formatINR(totals.fixedPlanned - totals.fixedPaid)} left`}
       />
-      <StripCard label="Daily spending" value={formatINR(totals.dailyTotal)} hint={`${formatINR(perDay)} a day`} />
     </div>
   );
 }

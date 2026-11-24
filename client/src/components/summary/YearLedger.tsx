@@ -56,8 +56,6 @@ export function YearLedger({
   data: SummaryYear;
   onMonthClick: (month: number) => void;
 }) {
-  const fixedGrandTotal = data.fixed.reduce((s, i) => s + i.total, 0);
-  const dailyGrandTotal = data.daily.reduce((s, i) => s + i.total, 0);
   const outGrandTotal = data.totals.out.reduce((s: number, v) => s + (v ?? 0), 0);
 
   return (
@@ -86,44 +84,15 @@ export function YearLedger({
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td
-              colSpan={14}
-              className="sticky left-0 bg-white px-3 pb-1 pt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-            >
-              Fixed expenses
-            </td>
-          </tr>
           {data.fixed.length === 0 ? (
             <tr>
               <td colSpan={14} className="px-3 py-4 text-center text-sm text-muted-foreground">
-                No fixed expenses this year.
+                No expenses this year.
               </td>
             </tr>
           ) : (
-            data.fixed.map((item) => <ItemRow key={item.id ?? item.name} item={item} />)
+            data.fixed.map((item) => <ItemRow key={item.id} item={item} />)
           )}
-          <TotalRow label="Fixed total" values={data.totals.fixed} total={fixedGrandTotal} />
-
-          <tr>
-            <td
-              colSpan={14}
-              className="sticky left-0 bg-white px-3 pb-1 pt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-            >
-              Daily spending
-            </td>
-          </tr>
-          {data.daily.length === 0 ? (
-            <tr>
-              <td colSpan={14} className="px-3 py-4 text-center text-sm text-muted-foreground">
-                No spends this year.
-              </td>
-            </tr>
-          ) : (
-            data.daily.map((item) => <ItemRow key={item.id ?? item.name} item={item} />)
-          )}
-          <TotalRow label="Daily total" values={data.totals.daily} total={dailyGrandTotal} />
-
           <TotalRow label="Total out" values={data.totals.out} total={outGrandTotal} />
         </tbody>
       </table>

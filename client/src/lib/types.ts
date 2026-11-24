@@ -22,7 +22,6 @@ export interface MonthByExpense {
 export interface MonthlyEntry {
   month: string;
   planned: number;
-  daily: number;
   byExpense: MonthByExpense[];
 }
 
@@ -45,16 +44,13 @@ export interface DashboardSummary {
   plannedPerMonth: number;
   plannedForYear: number;
   expenseCount: number;
-  dailyThisMonth: number;
-  dailyAvg: number;
-  outThisMonth: number;
 }
 
 export interface DashboardData {
   summary: DashboardSummary;
   monthly: MonthlyEntry[];
   thisMonth: ThisMonthEntry[];
-  recent: RecentActivity[];
+  recent: RecentPayment[];
 }
 
 export interface GridMonth {
@@ -95,65 +91,18 @@ export interface Payment {
   note: string | null;
 }
 
-export type PaymentMethod = "upi" | "card" | "cash";
-
-export interface SpendTag {
+export interface RecentPayment {
   id: string;
-  name: string;
+  expenseId: string;
+  expenseName: string;
   color: string;
-  sortOrder: number;
-  type: ExpenseType;
-}
-
-export interface SpendEntry {
-  id: string;
+  paidOn: string;
   amount: number;
   note: string | null;
-  tagId: string | null;
-  tagName: string;
-  tagColor: string;
-  paymentMethod: PaymentMethod;
-}
-
-export interface DailyDay {
-  date: string;
-  total: number;
-  entries: SpendEntry[];
-}
-
-export interface DailyCalendarDay {
-  date: string;
-  total: number;
-}
-
-export interface DailyTagShare {
-  tagId: string | null;
-  name: string;
-  color: string;
-  amount: number;
-}
-
-export interface DailyMonth {
-  total: number;
-  daysLogged: number;
-  avgPerDay: number;
-  byTag: DailyTagShare[];
-  days: DailyDay[];
-  calendar: DailyCalendarDay[];
-  lastPaymentMethod: PaymentMethod | null;
-}
-
-export interface SpendSuggestion {
-  label: string;
-  amount: number;
-  tagId: string | null;
-  tagName: string | null;
-  tagColor: string | null;
-  paymentMethod: PaymentMethod;
 }
 
 export interface SummaryYearItem {
-  id: string | null;
+  id: string;
   name: string;
   group: string | null;
   type: ExpenseType;
@@ -171,8 +120,7 @@ export interface SummaryYear {
   year: number;
   months: SummaryYearMonth[];
   fixed: SummaryYearItem[];
-  daily: SummaryYearItem[];
-  totals: { fixed: (number | null)[]; daily: (number | null)[]; out: (number | null)[] };
+  totals: { out: (number | null)[] };
   currentMonth: number | null;
 }
 
@@ -186,22 +134,11 @@ export interface SummaryMonthFixedRow {
   type: ExpenseType;
 }
 
-export interface SummaryMonthDailyRow {
-  tagId: string | null;
-  tagName: string;
-  spendCount: number;
-  amount: number;
-  type: ExpenseType;
-}
-
 export interface SummaryMonth {
   fixed: SummaryMonthFixedRow[];
-  daily: SummaryMonthDailyRow[];
   totals: {
     fixedPlanned: number;
     fixedPaid: number;
-    dailyTotal: number;
-    dailySpendCount: number;
     totalOut: number;
     prevMonthTotalOut: number | null;
     daysElapsed: number;
@@ -209,9 +146,8 @@ export interface SummaryMonth {
 }
 
 export interface TypeSummaryItem {
-  id: string | null;
+  id: string;
   name: string;
-  kind: "fixed" | "daily";
   amount: number;
 }
 
@@ -225,19 +161,6 @@ export interface TypeSummaryGroup {
 export interface TypeSummary {
   total: number;
   types: TypeSummaryGroup[];
-}
-
-export interface RecentActivity {
-  id: string;
-  kind: "payment" | "spend";
-  date: string;
-  name: string;
-  color: string;
-  amount: number;
-  note: string | null;
-  expenseId: string | null;
-  tagId: string | null;
-  paymentMethod: PaymentMethod | null;
 }
 
 export type DebtDirection = "owed_to_me" | "i_owe";
