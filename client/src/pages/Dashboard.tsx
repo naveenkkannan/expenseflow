@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,11 +10,13 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { MonthlyBarChart } from "@/components/charts/MonthlyBarChart";
 import { ShareBar } from "@/components/charts/ShareBar";
 import { PaymentFormDialog } from "@/components/payments/PaymentFormDialog";
+import { RowActionsMenu } from "@/components/shared/RowActionsMenu";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useYear } from "@/hooks/useYear";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useDeletePayment } from "@/hooks/useExpenses";
-import { formatINR, cn } from "@/lib/utils";
-import type { Payment } from "@/lib/types";
+import { formatINR } from "@/lib/utils";
+import type { Payment, RecentPayment } from "@/lib/types";
 
 const currentMonth = new Date().getMonth() + 1;
 
@@ -24,6 +26,7 @@ export default function Dashboard() {
   const deletePayment = useDeletePayment();
   const [paymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
   const [editingPayment, setEditingPayment] = React.useState<Payment | null>(null);
+  const [deleteTarget, setDeleteTarget] = React.useState<RecentPayment | null>(null);
 
   function openAddPayment() {
     setEditingPayment(null);
@@ -35,10 +38,10 @@ export default function Dashboard() {
     setPaymentDialogOpen(true);
   }
 
-  async function handleDelete(id: string) {
-    if (!window.confirm("Delete this payment?")) return;
+  async function handleDelete() {
+    if (!deleteTarget) return;
     try {
-      await deletePayment.mutateAsync(id);
+      await deletePayment.mutateAsync(deleteTarget.id);
       toast.success("Payment deleted.");
     } catch {
       toast.error("Could not delete the payment.");
@@ -172,27 +175,14 @@ export default function Dashboard() {
                       <td className="py-3 pr-4 text-muted-foreground">{p.note ?? "—"}</td>
                       <td className="py-3 pr-4 text-right font-medium tabular-nums">{formatINR(p.amount)}</td>
                       <td className="py-3 pl-4">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label={`Edit payment for ${p.expenseName}`}
-                            className={cn("h-11 w-11")}
-                            onClick={() =>
+                        <div className="flex justify-end">
+                          <RowActionsMenu
+                            label={`payment for ${p.expenseName}`}
+                            onEdit={() =>
                               openEditPayment({ id: p.id, expenseId: p.expenseId, paidOn: p.paidOn, amount: p.amount, note: p.note })
                             }
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label={`Delete payment for ${p.expenseName}`}
-                            className="h-11 w-11 text-destructive hover:text-destructive"
-                            onClick={() => handleDelete(p.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                            onDelete={() => setDeleteTarget(p)}
+                          />
                         </div>
                       </td>
                     </tr>
@@ -209,6 +199,12 @@ export default function Dashboard() {
         onOpenChange={setPaymentDialogOpen}
         expenses={expenseOptions}
         payment={editingPayment}
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Delete this payment?"
+        onConfirm={handleDelete}
       />
     </AppShell>
   );

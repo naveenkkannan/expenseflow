@@ -1,10 +1,12 @@
 import * as React from "react";
 import { toast } from "sonner";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DebtRepaymentDialog } from "@/components/debts/DebtRepaymentDialog";
+import { RowActionsMenu } from "@/components/shared/RowActionsMenu";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useDebtRepayments, useDeleteDebtRepayment } from "@/hooks/useDebts";
 import { formatINR } from "@/lib/utils";
 import type { Debt, DebtRepayment } from "@/lib/types";
@@ -14,6 +16,7 @@ export function DebtRepaymentsPanel({ debt }: { debt: Debt }) {
   const deleteRepayment = useDeleteDebtRepayment();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editingRepayment, setEditingRepayment] = React.useState<DebtRepayment | null>(null);
+  const [deleteTarget, setDeleteTarget] = React.useState<DebtRepayment | null>(null);
 
   function openAdd() {
     setEditingRepayment(null);
@@ -25,10 +28,10 @@ export function DebtRepaymentsPanel({ debt }: { debt: Debt }) {
     setDialogOpen(true);
   }
 
-  async function handleDelete(id: string) {
-    if (!window.confirm("Delete this repayment?")) return;
+  async function handleDelete() {
+    if (!deleteTarget) return;
     try {
-      await deleteRepayment.mutateAsync(id);
+      await deleteRepayment.mutateAsync(deleteTarget.id);
       toast.success("Repayment deleted.");
     } catch {
       toast.error("Could not delete the repayment.");
@@ -65,18 +68,7 @@ export function DebtRepaymentsPanel({ debt }: { debt: Debt }) {
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   <span className="text-sm font-medium tabular-nums">{formatINR(r.amount)}</span>
-                  <Button variant="ghost" size="icon" aria-label="Edit repayment" className="h-11 w-11" onClick={() => openEdit(r)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Delete repayment"
-                    className="h-11 w-11 text-destructive hover:text-destructive"
-                    onClick={() => handleDelete(r.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <RowActionsMenu label="repayment" onEdit={() => openEdit(r)} onDelete={() => setDeleteTarget(r)} />
                 </div>
               </li>
             ))}
@@ -94,6 +86,12 @@ export function DebtRepaymentsPanel({ debt }: { debt: Debt }) {
         }}
         debtId={debt.id}
         repayment={editingRepayment}
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Delete this repayment?"
+        onConfirm={handleDelete}
       />
     </Card>
   );

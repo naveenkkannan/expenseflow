@@ -1,9 +1,10 @@
 import * as React from "react";
-import { ChevronDown, ChevronRight, Pencil, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { RowActionsMenu } from "@/components/shared/RowActionsMenu";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useDeleteDebt } from "@/hooks/useDebts";
 import { cn, formatINR } from "@/lib/utils";
 import type { Debt } from "@/lib/types";
@@ -25,14 +26,15 @@ export function DebtSection({
 }) {
   const deleteDebt = useDeleteDebt();
   const [showSettled, setShowSettled] = React.useState(false);
+  const [deleteTarget, setDeleteTarget] = React.useState<Debt | null>(null);
 
   const open = debts.filter((d) => d.status === "open");
   const settled = debts.filter((d) => d.status === "settled");
 
-  async function handleDelete(debt: Debt) {
-    if (!window.confirm(`Delete the debt with ${debt.personName}? This also deletes its repayment history.`)) return;
+  async function handleDelete() {
+    if (!deleteTarget) return;
     try {
-      await deleteDebt.mutateAsync(debt.id);
+      await deleteDebt.mutateAsync(deleteTarget.id);
       toast.success("Debt deleted.");
     } catch {
       toast.error("Could not delete the debt.");
@@ -75,25 +77,12 @@ export function DebtSection({
             </span>
           )}
         </button>
-        <div className="mt-1.5 flex justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={`Edit debt with ${debt.personName}`}
-            className="h-11 w-11"
-            onClick={() => onEdit(debt)}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={`Delete debt with ${debt.personName}`}
-            className="h-11 w-11 text-destructive hover:text-destructive"
-            onClick={() => handleDelete(debt)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+        <div className="mt-1.5 flex justify-end">
+          <RowActionsMenu
+            label={`debt with ${debt.personName}`}
+            onEdit={() => onEdit(debt)}
+            onDelete={() => setDeleteTarget(debt)}
+          />
         </div>
       </li>
     );
@@ -126,6 +115,14 @@ export function DebtSection({
           </div>
         )}
       </CardContent>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title={`Delete the debt with ${deleteTarget?.personName}?`}
+        description="This also deletes its repayment history."
+        onConfirm={handleDelete}
+      />
     </Card>
   );
 }

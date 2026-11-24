@@ -1,7 +1,8 @@
 import * as React from "react";
-import { ChevronDown, ChevronRight, Pencil, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { RowActionsMenu } from "@/components/shared/RowActionsMenu";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useDeleteExpense } from "@/hooks/useExpenses";
 import { formatINR } from "@/lib/utils";
 import type { GridExpense } from "@/lib/types";
@@ -30,6 +31,7 @@ export function ExpenseTable({
 }) {
   const deleteExpense = useDeleteExpense();
   const [showEnded, setShowEnded] = React.useState(false);
+  const [deleteTarget, setDeleteTarget] = React.useState<GridExpense | null>(null);
 
   const activeExpenses = React.useMemo(() => expenses.filter((e) => !e.ended), [expenses]);
   const endedExpenses = React.useMemo(() => expenses.filter((e) => e.ended), [expenses]);
@@ -55,10 +57,10 @@ export function ExpenseTable({
     { duePerMonth: 0, paidSoFar: 0 }
   );
 
-  async function handleDelete(e: GridExpense) {
-    if (!window.confirm(`Delete "${e.name}"? This also deletes its payment history.`)) return;
+  async function handleDelete() {
+    if (!deleteTarget) return;
     try {
-      await deleteExpense.mutateAsync(e.id);
+      await deleteExpense.mutateAsync(deleteTarget.id);
       toast.success("Expense deleted.");
     } catch {
       toast.error("Could not delete the expense.");
@@ -99,25 +101,8 @@ export function ExpenseTable({
           )}
         </td>
         <td className="py-2 pl-4">
-          <div className="flex justify-end gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={`Edit ${e.name}`}
-              className="h-11 w-11"
-              onClick={() => onEdit(e)}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={`Delete ${e.name}`}
-              className="h-11 w-11 text-destructive hover:text-destructive"
-              onClick={() => handleDelete(e)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+          <div className="flex justify-end">
+            <RowActionsMenu label={e.name} onEdit={() => onEdit(e)} onDelete={() => setDeleteTarget(e)} />
           </div>
         </td>
       </tr>
@@ -191,6 +176,14 @@ export function ExpenseTable({
           )}
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title={`Delete "${deleteTarget?.name}"?`}
+        description="This also deletes its payment history."
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

@@ -1,6 +1,5 @@
 import * as React from "react";
 import { toast } from "sonner";
-import { Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PaymentFormDialog } from "@/components/payments/PaymentFormDialog";
+import { RowActionsMenu } from "@/components/shared/RowActionsMenu";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { usePayments, useCreatePayment, useDeletePayment } from "@/hooks/useExpenses";
 import { formatINR } from "@/lib/utils";
 import type { GridExpense, Payment } from "@/lib/types";
@@ -42,6 +43,7 @@ export function MonthPaymentsPanel({
   const [amount, setAmount] = React.useState("");
   const [note, setNote] = React.useState("");
   const [editingPayment, setEditingPayment] = React.useState<Payment | null>(null);
+  const [deleteTarget, setDeleteTarget] = React.useState<Payment | null>(null);
 
   const paid = payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
   const pct = planned > 0 ? Math.min(100, Math.round((paid / planned) * 100)) : paid > 0 ? 100 : 0;
@@ -63,10 +65,10 @@ export function MonthPaymentsPanel({
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!window.confirm("Delete this payment?")) return;
+  async function handleDelete() {
+    if (!deleteTarget) return;
     try {
-      await deletePayment.mutateAsync(id);
+      await deletePayment.mutateAsync(deleteTarget.id);
       toast.success("Payment deleted.");
     } catch {
       toast.error("Could not delete the payment.");
@@ -106,18 +108,11 @@ export function MonthPaymentsPanel({
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     <span className="text-sm font-medium tabular-nums">{formatINR(p.amount)}</span>
-                    <Button variant="ghost" size="icon" aria-label="Edit payment" className="h-11 w-11" onClick={() => setEditingPayment(p)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Delete payment"
-                      className="h-11 w-11 text-destructive hover:text-destructive"
-                      onClick={() => handleDelete(p.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <RowActionsMenu
+                      label="payment"
+                      onEdit={() => setEditingPayment(p)}
+                      onDelete={() => setDeleteTarget(p)}
+                    />
                   </div>
                 </li>
               ))}
@@ -177,6 +172,12 @@ export function MonthPaymentsPanel({
         onOpenChange={(open) => !open && setEditingPayment(null)}
         expenses={[{ id: cell.expenseId, name: cell.expenseName }]}
         payment={editingPayment}
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Delete this payment?"
+        onConfirm={handleDelete}
       />
     </div>
   );
