@@ -23,6 +23,19 @@ function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function currentMonthKey(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+}
+
+// Today's date only makes sense as a default when the selected cell IS
+// the current month; for any other month, defaulting to "today" would
+// silently log the payment into the wrong month if the date is left
+// untouched, so default to the 1st of the selected month instead.
+function defaultDateFor(cellMonth: string): string {
+  return cellMonth === currentMonthKey() ? todayISO() : cellMonth;
+}
+
 export function MonthPaymentsPanel({
   cell,
   expense,
@@ -39,7 +52,7 @@ export function MonthPaymentsPanel({
   const createPayment = useCreatePayment();
   const deletePayment = useDeletePayment();
 
-  const [date, setDate] = React.useState(todayISO());
+  const [date, setDate] = React.useState(() => defaultDateFor(cell.month));
   const [amount, setAmount] = React.useState("");
   const [note, setNote] = React.useState("");
   const [editingPayment, setEditingPayment] = React.useState<Payment | null>(null);
@@ -57,7 +70,7 @@ export function MonthPaymentsPanel({
   React.useEffect(() => {
     const remaining = Math.max(planned - (monthEntry?.paid ?? 0), 0);
     setAmount(remaining > 0 ? String(remaining) : "");
-    setDate(todayISO());
+    setDate(defaultDateFor(cell.month));
     setNote("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cell.expenseId, cell.month]);
