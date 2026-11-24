@@ -61,37 +61,10 @@ describe("fn_year_summary", () => {
 
     await pool.query("DELETE FROM expenses WHERE id = $1", [expenseId]);
   });
-
-  it("groups daily spends by tag and month without duplicating totals", async () => {
-    const tagResult = await pool.query(
-      "SELECT create_spend_tag($1, 'Year Summary Tag', '#ff00ff') AS result",
-      [userId]
-    );
-    const tagId = tagResult.rows[0].result.id;
-    await pool.query("SELECT add_spend($1, '2026-03-05', 200, $2, 'upi', NULL)", [
-      userId,
-      tagId,
-    ]);
-    await pool.query("SELECT add_spend($1, '2026-03-20', 50, NULL, 'cash', NULL)", [userId]);
-
-    const rows = (
-      await pool.query("SELECT * FROM fn_year_summary($1, 2026)", [userId])
-    ).rows.filter((r: any) => r.kind === "daily" && r.month === 3);
-    const tagRow = rows.find((r: any) => r.item_id === tagId);
-    const untaggedRow = rows.find((r: any) => r.item_name === "Untagged");
-
-    expect(Number(tagRow.paid)).toBe(200);
-    expect(tagRow.spend_count).toBe(1);
-    expect(Number(untaggedRow.paid)).toBe(50);
-
-    await pool.query("DELETE FROM spends WHERE user_id = $1 AND spent_on = '2026-03-05'", [userId]);
-    await pool.query("DELETE FROM spends WHERE user_id = $1 AND spent_on = '2026-03-20'", [userId]);
-    await pool.query("DELETE FROM spend_tags WHERE id = $1", [tagId]);
-  });
 });
 
 describe("fn_month_summary", () => {
-  it("computes fixed/daily totals, status, and the previous month's total out", async () => {
+  it("computes fixed totals, status, and the previous month's total out", async () => {
     const expenseResult = await pool.query(
       "SELECT create_expense($1, 'Month Summary Expense', NULL, '#000000', 1000, '2026-01-01') AS result",
       [userId]
@@ -105,7 +78,6 @@ describe("fn_month_summary", () => {
       userId,
       expenseId,
     ]);
-    await pool.query("SELECT add_spend($1, '2026-10-05', 150, NULL, 'upi', NULL)", [userId]);
 
     const result = await pool.query("SELECT fn_month_summary($1, 2026, 10) AS data", [userId]);
     const data = result.rows[0].data;
@@ -113,12 +85,10 @@ describe("fn_month_summary", () => {
     const expenseRow = data.fixed.find((f: any) => f.expenseId === expenseId);
     expect(expenseRow.status).toBe("partial");
     expect(Number(data.totals.fixedPaid)).toBeGreaterThanOrEqual(400);
-    expect(Number(data.totals.dailyTotal)).toBeGreaterThanOrEqual(150);
-    expect(Number(data.totals.totalOut)).toBe(Number(data.totals.fixedPaid) + Number(data.totals.dailyTotal));
+    expect(Number(data.totals.totalOut)).toBe(Number(data.totals.fixedPaid));
     expect(Number(data.totals.prevMonthTotalOut)).toBeGreaterThanOrEqual(1000);
 
     await pool.query("DELETE FROM expenses WHERE id = $1", [expenseId]);
-    await pool.query("DELETE FROM spends WHERE user_id = $1 AND spent_on = '2026-10-05'", [userId]);
   });
 
   it("returns null prevMonthTotalOut for January", async () => {

@@ -28,12 +28,10 @@ beforeAll(async () => {
   );
   expenseId = expenseResult.rows[0].result.id;
   await pool.query("SELECT create_payment($1, $2, '2026-03-15', 500, NULL)", [userId, expenseId]);
-  await pool.query("SELECT add_spend($1, '2026-03-20', 75, NULL, 'upi', NULL)", [userId]);
 });
 
 afterAll(async () => {
   await pool.query("DELETE FROM expenses WHERE id = $1", [expenseId]);
-  await pool.query("DELETE FROM spends WHERE user_id = $1", [userId]);
   await pool.query("DELETE FROM users WHERE id = $1", [userId]);
   await pool.end();
 });
@@ -62,7 +60,7 @@ describe("summary routes", () => {
     const res = await request(app).get("/api/summary/month?year=2026&month=3").set("Cookie", cookie);
     expect(res.status).toBe(200);
     expect(res.body.fixed.some((f: any) => f.expenseId === expenseId)).toBe(true);
-    expect(Number(res.body.totals.totalOut)).toBe(575);
+    expect(Number(res.body.totals.totalOut)).toBe(500);
   });
 
   it("downloads the year CSV with a BOM and no currency symbols", async () => {
@@ -85,15 +83,14 @@ describe("summary routes", () => {
     expect(res.status).toBe(200);
     const sum = res.body.types.reduce((s: number, t: any) => s + t.amount, 0);
     expect(sum).toBeCloseTo(res.body.total, 2);
-    expect(res.body.total).toBeCloseTo(575, 2);
+    expect(res.body.total).toBeCloseTo(500, 2);
     const needType = res.body.types.find((t: any) => t.type === "need");
     expect(needType.items.some((i: any) => i.name === "Summary Route Expense")).toBe(true);
-    expect(res.body.types.every((t: any) => t.amount > 0)).toBe(true);
   });
 
   it("gets the needs/wants/investments breakdown year-to-date when month is omitted", async () => {
     const res = await request(app).get("/api/summary/types?year=2026").set("Cookie", cookie);
     expect(res.status).toBe(200);
-    expect(res.body.total).toBeGreaterThanOrEqual(575);
+    expect(res.body.total).toBeGreaterThanOrEqual(500);
   });
 });

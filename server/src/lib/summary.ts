@@ -5,19 +5,17 @@ const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "S
 export type ExpenseType = "need" | "want" | "investment";
 
 export interface YearSummaryRow {
-  kind: "fixed" | "daily";
-  item_id: string | null;
+  item_id: string;
   item_name: string;
   group_name: string | null;
   month: number;
   planned: string | null;
   paid: string;
-  spend_count: number | null;
   type: ExpenseType;
 }
 
 export interface YearItem {
-  id: string | null;
+  id: string;
   name: string;
   group: string | null;
   type: ExpenseType;
@@ -29,8 +27,7 @@ export interface YearSummary {
   year: number;
   months: { month: number; label: string; inProgress: boolean }[];
   fixed: YearItem[];
-  daily: YearItem[];
-  totals: { fixed: (number | null)[]; daily: (number | null)[]; out: (number | null)[] };
+  totals: { out: (number | null)[] };
   currentMonth: number | null;
 }
 
@@ -52,38 +49,26 @@ export function buildYearSummary(
   currentYear: number,
   currentMonth: number
 ): YearSummary {
-  type Draft = { id: string | null; name: string; group: string | null; type: ExpenseType; values: (number | null)[] };
-  const fixedMap = new Map<string, Draft>();
-  const dailyMap = new Map<string, Draft>();
+  type Draft = { id: string; name: string; group: string | null; type: ExpenseType; values: (number | null)[] };
+  const itemMap = new Map<string, Draft>();
 
   for (const r of rows) {
-    const map = r.kind === "fixed" ? fixedMap : dailyMap;
-    const key = r.item_id ?? "__untagged__";
-    if (!map.has(key)) {
-      map.set(key, { id: r.item_id, name: r.item_name, group: r.group_name, type: r.type, values: Array(12).fill(null) });
+    if (!itemMap.has(r.item_id)) {
+      itemMap.set(r.item_id, { id: r.item_id, name: r.item_name, group: r.group_name, type: r.type, values: Array(12).fill(null) });
     }
-    map.get(key)!.values[r.month - 1] = Number(r.paid);
+    itemMap.get(r.item_id)!.values[r.month - 1] = Number(r.paid);
   }
 
   const isFutureMonth = (m: number) => year > currentYear || (year === currentYear && m + 1 > currentMonth);
 
-  function finalize(map: Map<string, Draft>): YearItem[] {
-    return Array.from(map.values()).map((draft) => {
+  const fixed = Array.from(itemMap.values())
+    .map((draft) => {
       const values = draft.values.map((v, m) => (isFutureMonth(m) ? null : v));
       return { ...draft, values, total: values.reduce((sum: number, v) => sum + (v ?? 0), 0) };
-    });
-  }
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
 
-  const fixed = finalize(fixedMap).sort((a, b) => a.name.localeCompare(b.name));
-  const daily = finalize(dailyMap).sort((a, b) => b.total - a.total);
-
-  const totalsFixed = Array.from({ length: 12 }, (_, m) => sumColumn(fixed, m));
-  const totalsDaily = Array.from({ length: 12 }, (_, m) => sumColumn(daily, m));
-  const totalsOut = totalsFixed.map((f, m) => {
-    const d = totalsDaily[m];
-    if (f === null && d === null) return null;
-    return (f ?? 0) + (d ?? 0);
-  });
+  const totalsOut = Array.from({ length: 12 }, (_, m) => sumColumn(fixed, m));
 
   const months = Array.from({ length: 12 }, (_, i) => ({
     month: i + 1,
@@ -95,8 +80,7 @@ export function buildYearSummary(
     year,
     months,
     fixed,
-    daily,
-    totals: { fixed: totalsFixed, daily: totalsDaily, out: totalsOut },
+    totals: { out: totalsOut },
     currentMonth: year === currentYear ? currentMonth : null,
   };
 }
@@ -106,23 +90,15 @@ function fmtAmount(v: number | null): string {
 }
 
 export function yearSummaryToCsv(summary: YearSummary): string {
-  const header = ["Kind", "Item", "Group", "Type", ...summary.months.map((m) => m.label), "Total"];
+  const header = ["Item", "Group", "Type", ...summary.months.map((m) => m.label), "Total"];
   const rows: (string | number)[][] = [header];
 
   for (const item of summary.fixed) {
-    rows.push(["Fixed", item.name, item.group ?? "", item.type, ...item.values.map(fmtAmount), item.total.toFixed(2)]);
+    rows.push([item.name, item.group ?? "", item.type, ...item.values.map(fmtAmount), item.total.toFixed(2)]);
   }
-  const fixedGrandTotal = summary.totals.fixed.reduce((s: number, v) => s + (v ?? 0), 0);
-  rows.push(["Fixed", "Fixed total", "", "", ...summary.totals.fixed.map(fmtAmount), fixedGrandTotal.toFixed(2)]);
-
-  for (const item of summary.daily) {
-    rows.push(["Daily", item.name, "", item.type, ...item.values.map(fmtAmount), item.total.toFixed(2)]);
-  }
-  const dailyGrandTotal = summary.totals.daily.reduce((s: number, v) => s + (v ?? 0), 0);
-  rows.push(["Daily", "Daily total", "", "", ...summary.totals.daily.map(fmtAmount), dailyGrandTotal.toFixed(2)]);
 
   const outGrandTotal = summary.totals.out.reduce((s: number, v) => s + (v ?? 0), 0);
-  rows.push(["Total", "Total out", "", "", ...summary.totals.out.map(fmtAmount), outGrandTotal.toFixed(2)]);
+  rows.push(["Total out", "", "", ...summary.totals.out.map(fmtAmount), outGrandTotal.toFixed(2)]);
 
   return toCsv(rows);
 }
@@ -137,12 +113,9 @@ export interface MonthSummary {
     status: string;
     type: ExpenseType;
   }[];
-  daily: { tagId: string | null; tagName: string; spendCount: number; amount: number; type: ExpenseType }[];
   totals: {
     fixedPlanned: number;
     fixedPaid: number;
-    dailyTotal: number;
-    dailySpendCount: number;
     totalOut: number;
     prevMonthTotalOut: number | null;
     daysElapsed: number;
@@ -166,23 +139,12 @@ export function monthSummaryToCsv(summary: MonthSummary): string {
     left <= 0 ? "All paid" : `Left ${left.toFixed(2)}`,
   ]);
 
-  rows.push([]);
-
-  rows.push(["Tag", "Type", "Spends", "Average per spend", "Amount"]);
-  for (const t of summary.daily) {
-    const avg = t.spendCount > 0 ? t.amount / t.spendCount : 0;
-    rows.push([t.tagName, t.type, t.spendCount, avg.toFixed(2), t.amount.toFixed(2)]);
-  }
-  const dailyAvg = summary.totals.dailySpendCount > 0 ? summary.totals.dailyTotal / summary.totals.dailySpendCount : 0;
-  rows.push(["Total", "", summary.totals.dailySpendCount, dailyAvg.toFixed(2), summary.totals.dailyTotal.toFixed(2)]);
-
   return toCsv(rows);
 }
 
 export interface TypeSummaryRow {
   type: ExpenseType;
-  item_kind: "fixed" | "daily";
-  item_id: string | null;
+  item_id: string;
   item_name: string;
   amount: string;
 }
@@ -193,7 +155,7 @@ export interface TypeSummary {
     type: ExpenseType;
     amount: number;
     pct: number;
-    items: { id: string | null; name: string; kind: "fixed" | "daily"; amount: number }[];
+    items: { id: string; name: string; amount: number }[];
   }[];
 }
 
@@ -207,7 +169,7 @@ export function buildTypeSummary(rows: TypeSummaryRow[]): TypeSummary {
     if (!byType.has(r.type)) byType.set(r.type, { amount: 0, items: [] });
     const entry = byType.get(r.type)!;
     entry.amount += amount;
-    entry.items.push({ id: r.item_id, name: r.item_name, kind: r.item_kind, amount });
+    entry.items.push({ id: r.item_id, name: r.item_name, amount });
   }
 
   const total = Array.from(byType.values()).reduce((sum, t) => sum + t.amount, 0);
