@@ -78,7 +78,9 @@ export default function Expenses() {
           <DialogHeader className="sr-only">
             <DialogTitle>{selected ? `${selected.expenseName} payments` : "Payments"}</DialogTitle>
           </DialogHeader>
-          {selected && selectedExpense && <MonthPaymentsPanel cell={selected} expense={selectedExpense} />}
+          {selected && selectedExpense && (
+            <MonthPaymentsPanel cell={selected} expense={selectedExpense} onSaved={() => setSelected(null)} />
+          )}
         </DialogContent>
       </Dialog>
 

@@ -39,9 +39,11 @@ function defaultDateFor(cellMonth: string): string {
 export function MonthPaymentsPanel({
   cell,
   expense,
+  onSaved,
 }: {
   cell: SelectedCell;
   expense: GridExpense;
+  onSaved?: () => void;
 }) {
   const [year, month] = cell.month.split("-").map(Number);
   const monthEntry = expense.months.find((m) => m.month === cell.month);
@@ -87,6 +89,7 @@ export function MonthPaymentsPanel({
       setAmount("");
       setNote("");
       toast.success("Payment logged.");
+      onSaved?.();
     } catch {
       toast.error("Could not log the payment.");
     }
