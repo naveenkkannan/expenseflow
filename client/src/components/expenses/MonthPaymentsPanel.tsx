@@ -50,15 +50,17 @@ export function MonthPaymentsPanel({
 
   // Reset the add-payment form for the newly selected cell, prefilling
   // the amount with what's still due so logging the usual payment is a
-  // single tap on Save instead of retyping the planned amount.
+  // single tap on Save instead of retyping the planned amount. Uses the
+  // grid's own `paid` figure (already in `expense`, available instantly)
+  // rather than the separately-fetched payments list, so this doesn't
+  // race that query's loading state.
   React.useEffect(() => {
-    if (isLoading) return;
-    const remaining = Math.max(planned - paid, 0);
+    const remaining = Math.max(planned - (monthEntry?.paid ?? 0), 0);
     setAmount(remaining > 0 ? String(remaining) : "");
     setDate(todayISO());
     setNote("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cell.expenseId, cell.month, isLoading]);
+  }, [cell.expenseId, cell.month]);
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
